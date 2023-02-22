@@ -13,7 +13,7 @@ ConditionCodes * ConditionCodes::ccInstance = NULL;
  */
 ConditionCodes::ConditionCodes()
 {
-
+   ccInstance = new ConditionCodes();
 }
 
 /**
@@ -26,7 +26,10 @@ ConditionCodes::ConditionCodes()
  */
 ConditionCodes * ConditionCodes::getInstance()
 {
-   return NULL;
+   if (ccInstance == NULL) {
+      ConditionCodes();
+   }
+   return ccInstance;
 }
 
 /*
