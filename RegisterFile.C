@@ -13,6 +13,7 @@ RegisterFile * RegisterFile::regInstance = NULL;
  */
 RegisterFile::RegisterFile()
 {
+   regInstance = new RegisterFile();
 }
 
 /**
@@ -25,7 +26,7 @@ RegisterFile::RegisterFile()
  */
 RegisterFile * RegisterFile::getInstance()
 {
-   return NULL;
+   return regInstance;
 }
 
 /**
@@ -42,7 +43,14 @@ RegisterFile * RegisterFile::getInstance()
 */
 uint64_t RegisterFile::readRegister(int32_t regNumber, bool & error)
 {
-   return 0;
+   if (regNumber < 0 || regNumber > 14) {
+      error = true;
+      return 0;
+   }
+   else {
+      error = false;
+      return regInstance[regNumber];
+   }
 }
 
 /**
@@ -57,6 +65,16 @@ uint64_t RegisterFile::readRegister(int32_t regNumber, bool & error)
 void RegisterFile::writeRegister(uint64_t value, int32_t regNumber, 
                                  bool & error)
 {
+   if (regNumber < 0 || regNumber > 14) {
+      error = true;
+      return error;
+   }
+   
+   else {
+      regInstance[regNumber] = value;
+      error = false;
+      return error;
+   }
    return;
 }
 
