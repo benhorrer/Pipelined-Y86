@@ -6,13 +6,14 @@
 //memInstance will be initialized to the single instance
 //of the Memory class
 Memory * Memory::memInstance = NULL;
-
 /** 
  * Memory constructor
  * initializes the mem array to 0
  */
 Memory::Memory()
 {
+   uint64_t usedSpots = 0;
+   uint8_t MegimoryArray[0];
 }
 
 /**
@@ -24,7 +25,10 @@ Memory::Memory()
  */
 Memory * Memory::getInstance()
 {
-   return NULL;
+   if (memInstance == NULL) {
+      Memory();
+   }
+   return memInstance;
 }
 
 /**
@@ -40,7 +44,14 @@ Memory * Memory::getInstance()
  */
 uint64_t Memory::getLong(int32_t address, bool & imem_error)
 {
-   return 0;
+   if (address >  || address % 8 != 0) {
+      imem_error = true;
+      return 0;
+   }
+   else {
+      imem_error = false;
+      return memInstance.MemoryArray[address];
+   }
 }
 
 /**
@@ -55,7 +66,15 @@ uint64_t Memory::getLong(int32_t address, bool & imem_error)
  */
 uint8_t Memory::getByte(int32_t address, bool & imem_error)
 {
-   return 0;
+   if (address > memInstance.usedSpots) {
+      imem_error = true;
+      return 0;
+   }
+
+   else {
+      imem_error = false;
+      return memInstance.MemoryArray[address];
+   }
 }
 
 /**
