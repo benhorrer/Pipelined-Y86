@@ -13,7 +13,7 @@ ConditionCodes * ConditionCodes::ccInstance = NULL;
  */
 ConditionCodes::ConditionCodes()
 {
-
+    codes = 0;
 }
 
 /**
@@ -26,7 +26,8 @@ ConditionCodes::ConditionCodes()
  */
 ConditionCodes * ConditionCodes::getInstance()
 {
-   return NULL;
+   if (ccInstance == NULL) ccInstance = new ConditionCodes();
+   return ccInstance;
 }
 
 /*
@@ -42,9 +43,15 @@ ConditionCodes * ConditionCodes::getInstance()
  */
 bool ConditionCodes::getConditionCode(int32_t ccNum, bool & error)
 {
-   //Use your getBits in Tools.C.
-   //Don't use "magic" numbers.
-   return false;
+   if (ccNum != 3 && ccNum != 6 && ccNum != 2) {
+       *error = true;
+       return false
+   } else {
+       *error = false;
+       uint64_t bit = getBits(codes, ccNum, ccNum);
+       if (bit == 0) return false;       
+       else return true;
+   }
 }
 
 /*
