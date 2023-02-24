@@ -69,8 +69,12 @@ bool ConditionCodes::getConditionCode(int32_t ccNum, bool & error)
 void ConditionCodes::setConditionCode(bool value, int32_t ccNum, 
                                       bool & error)
 {
-   //Use your setBits and clearBits in Tools.C. 
-   //Don't use "magic" numbers in your code.
+   if (ccNum != 3 && ccNum != 6 && ccNum != 2) {
+       *error = true;
+   } else {
+       if (value) setBits(codes, ccNum, ccNum);
+       else clearBits(codes, ccNum, ccNum);
+   }
    return;
 }
 
