@@ -13,7 +13,11 @@ ConditionCodes * ConditionCodes::ccInstance = NULL;
  */
 ConditionCodes::ConditionCodes()
 {
+<<<<<<< HEAD
     codes = 0;
+=======
+   ccInstance = new ConditionCodes();
+>>>>>>> 612c59558af0276f820cd9f6740a29d9e376e1c6
 }
 
 /**
@@ -26,7 +30,13 @@ ConditionCodes::ConditionCodes()
  */
 ConditionCodes * ConditionCodes::getInstance()
 {
+<<<<<<< HEAD
    if (ccInstance == NULL) ccInstance = new ConditionCodes();
+=======
+   if (ccInstance == NULL) {
+      ConditionCodes();
+   }
+>>>>>>> 612c59558af0276f820cd9f6740a29d9e376e1c6
    return ccInstance;
 }
 
