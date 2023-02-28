@@ -6,8 +6,7 @@
 //memInstance will be initialized to the single instance
 //of the Memory class
 Memory * Memory::memInstance = NULL;
-uint64_t usedSpots = 0;
-uint8_t MemoryArray[0];
+
 /** 
  * Memory constructor
  * initializes the mem array to 0
@@ -15,7 +14,9 @@ uint8_t MemoryArray[0];
 Memory::Memory()
 {
    uint64_t usedSpots = 0;
-   uint8_t MemoryArray[0];
+   uint8_t memoryArray[0];
+   memInstance = new Memory();
+
 }
 
 /**
@@ -28,7 +29,7 @@ Memory::Memory()
 Memory * Memory::getInstance()
 {
    if (memInstance == NULL) {
-      Memory();
+      memInstance = new Memory();
    }
    return memInstance;
 }
@@ -46,7 +47,7 @@ Memory * Memory::getInstance()
  */
 uint64_t Memory::getLong(int32_t address, bool & imem_error)
 {
-   if (address >  || address % 8 != 0) {
+   if (address >  usedSpots || address % 8 != 0) {
       imem_error = true;
       return 0;
    }
@@ -54,8 +55,8 @@ uint64_t Memory::getLong(int32_t address, bool & imem_error)
       uint64_t returnValue = 0;
       imem_error = false; 
       for (int i = 7; i >= 0; i--) {
-         uint64_t insertValue = MemoryArray[address + i];
-         returnValue += insertValue << i * 8
+         uint64_t insertValue = *memInstance ->memoryArray[address + i];
+         returnValue += insertValue << i * 8;
       }
       return returnValue;
    }
@@ -97,14 +98,14 @@ uint8_t Memory::getByte(int32_t address, bool & imem_error)
  */
 void Memory::putLong(uint64_t value, int32_t address, bool & imem_error)
 {
-   Tools tool = new Tools();
+   Tools tool = Tools();
    if (address > usedSpots || address % 8 != 0) {
       imem_error = true;
    }
    else {
       imem_error = false; 
       for (int i = 0; i < 8; i++) {
-         MemoryArray[address + i] = (uint_8) tool.getByte(value, i);
+         MemoryArray[address + i] = (uint8_t) tool.getByte(value, i);
       }
    }
 }
