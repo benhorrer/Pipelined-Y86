@@ -13,10 +13,8 @@ Memory * Memory::memInstance = NULL;
  */
 Memory::Memory()
 {
-   uint64_t usedSpots = 0;
-   uint8_t memoryArray[0];
-   memInstance = new Memory();
-
+   memInstance = getInstance();
+   mem[0];
 }
 
 /**
@@ -47,7 +45,7 @@ Memory * Memory::getInstance()
  */
 uint64_t Memory::getLong(int32_t address, bool & imem_error)
 {
-   if (address >  usedSpots || address % 8 != 0) {
+   if (address >  sizeof(mem) || address % 8 != 0) {
       imem_error = true;
       return 0;
    }
@@ -55,7 +53,7 @@ uint64_t Memory::getLong(int32_t address, bool & imem_error)
       uint64_t returnValue = 0;
       imem_error = false; 
       for (int i = 7; i >= 0; i--) {
-         uint64_t insertValue = *memInstance ->memoryArray[address + i];
+         uint64_t insertValue = mem[address + i];
          returnValue += insertValue << i * 8;
       }
       return returnValue;
@@ -74,14 +72,14 @@ uint64_t Memory::getLong(int32_t address, bool & imem_error)
  */
 uint8_t Memory::getByte(int32_t address, bool & imem_error)
 {
-   if (address > memInstance.usedSpots) {
+   if (address > sizeof(mem)) {
       imem_error = true;
       return 0;
    }
 
    else {
       imem_error = false;
-      return memInstance.MemoryArray[address];
+      return mem[address];
    }
 }
 
@@ -99,13 +97,13 @@ uint8_t Memory::getByte(int32_t address, bool & imem_error)
 void Memory::putLong(uint64_t value, int32_t address, bool & imem_error)
 {
    Tools tool = Tools();
-   if (address > usedSpots || address % 8 != 0) {
+   if (address > sizeof(mem) || address % 8 != 0) {
       imem_error = true;
    }
    else {
       imem_error = false; 
       for (int i = 0; i < 8; i++) {
-         MemoryArray[address + i] = (uint8_t) tool.getByte(value, i);
+         mem[address + i] = (uint8_t) tool.getByte(value, i);
       }
    }
 }
@@ -123,11 +121,11 @@ void Memory::putLong(uint64_t value, int32_t address, bool & imem_error)
 
 void Memory::putByte(uint8_t value, int32_t address, bool & imem_error)
 {
-   if (address > memInstance.usedSpots) {
+   if (address > sizeof(mem)) {
       imem_error = true;
    }
    else {
-      MemoryArray[address] = value;
+      mem[address] = value;
       imem_error = false;
    }
    
