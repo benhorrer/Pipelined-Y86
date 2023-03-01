@@ -46,7 +46,7 @@ Memory * Memory::getInstance()
  */
 uint64_t Memory::getLong(int32_t address, bool & imem_error)
 {
-   if (address >  sizeof(mem) || address % 8 != 0) {
+   if (address >= MEMSIZE || address % 8 != 0 || address < 0) {
       imem_error = true;
       return 0;
    }
@@ -73,7 +73,7 @@ uint64_t Memory::getLong(int32_t address, bool & imem_error)
  */
 uint8_t Memory::getByte(int32_t address, bool & imem_error)
 {
-   if (address > sizeof(mem)) {
+   if (address >= MEMSIZE || address < 0) {
       imem_error = true;
       return 0;
    }
@@ -98,7 +98,7 @@ uint8_t Memory::getByte(int32_t address, bool & imem_error)
 void Memory::putLong(uint64_t value, int32_t address, bool & imem_error)
 {
    Tools tool = Tools();
-   if (address > sizeof(mem) || address % 8 != 0) {
+   if (address >= MEMSIZE || address % 8 != 0 || address < 0) {
       imem_error = true;
    }
    else {
@@ -122,7 +122,7 @@ void Memory::putLong(uint64_t value, int32_t address, bool & imem_error)
 
 void Memory::putByte(uint8_t value, int32_t address, bool & imem_error)
 {
-   if (address > sizeof(mem)) {
+   if (address >= MEMSIZE || address < 0) {
       imem_error = true;
    }
    else {
