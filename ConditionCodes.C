@@ -14,7 +14,7 @@ ConditionCodes * ConditionCodes::ccInstance = NULL;
 ConditionCodes::ConditionCodes()
 {
     codes = 0;
-    ccInstance = new ConditionCodes();
+    //ccInstance = new ConditionCodes();
 }
 
 /**
@@ -27,7 +27,7 @@ ConditionCodes::ConditionCodes()
  */
 ConditionCodes * ConditionCodes::getInstance()
 {
-   if (ccInstance == NULL) ccInstance = new ConditionCodes();
+   if (ccInstance == NULL) ccInstance = new ConditionCodes;
    return ccInstance;
 }
 

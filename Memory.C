@@ -13,8 +13,9 @@ Memory * Memory::memInstance = NULL;
  */
 Memory::Memory()
 {
-   memInstance = getInstance();
-   mem[0];
+   for (int i = 0; i < MEMSIZE; ++i) {
+      mem[i] = 0;
+   }
 }
 
 /**
@@ -27,7 +28,7 @@ Memory::Memory()
 Memory * Memory::getInstance()
 {
    if (memInstance == NULL) {
-      memInstance = new Memory();
+      memInstance = new Memory;
    }
    return memInstance;
 }
