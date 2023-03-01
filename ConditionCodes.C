@@ -14,7 +14,6 @@ ConditionCodes * ConditionCodes::ccInstance = NULL;
 ConditionCodes::ConditionCodes()
 {
     codes = 0;
-    //ccInstance = new ConditionCodes();
 }
 
 /**
@@ -76,8 +75,8 @@ void ConditionCodes::setConditionCode(bool value, int32_t ccNum,
        error = true;
    } else {
        error = false;
-       if (value) t.setBits(codes, ccNum, ccNum);
-       else t.clearBits(codes, ccNum, ccNum);
+       if (value) codes = t.setBits(codes, ccNum, ccNum);
+       else codes = t.clearBits(codes, ccNum, ccNum);
    }
    return;
 }
