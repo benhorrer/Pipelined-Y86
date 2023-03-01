@@ -31,7 +31,7 @@ RegisterFile *RegisterFile::getInstance()
 {
    if (regInstance == NULL)
    {
-      regInstance = new RegisterFile();
+      regInstance = new RegisterFile;
    }
    return regInstance;
 }
