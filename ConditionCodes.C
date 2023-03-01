@@ -76,7 +76,7 @@ void ConditionCodes::setConditionCode(bool value, int32_t ccNum,
    } else {
        error = false;
        if (value) codes = t.setBits(codes, ccNum, ccNum);
-       else t.clearBits(codes, ccNum, ccNum);
+       else codes = t.clearBits(codes, ccNum, ccNum);
    }
    return;
 }
