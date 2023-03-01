@@ -3,9 +3,9 @@
 #include "RegisterFile.h"
 #include "Tools.h"
 
-//regInstance will be initialized to the single RegisterFile
-//object that is created
-RegisterFile * RegisterFile::regInstance = NULL;
+// regInstance will be initialized to the single RegisterFile
+// object that is created
+RegisterFile *RegisterFile::regInstance = NULL;
 
 /**
  * RegisterFile constructor
@@ -13,10 +13,8 @@ RegisterFile * RegisterFile::regInstance = NULL;
  */
 RegisterFile::RegisterFile()
 {
-   
-   regInstance = getInstance();
-   reg[15];
-   for (int i = 0; i < 15; i++) {
+   for (int i = 0; i < REGSIZE; i++)
+   {
       reg[i] = 0;
    }
 }
@@ -29,9 +27,10 @@ RegisterFile::RegisterFile()
  * @return regInstance, the pointer to the single RegisterFile
  *         instance
  */
-RegisterFile * RegisterFile::getInstance()
+RegisterFile *RegisterFile::getInstance()
 {
-   if (regInstance == NULL) {
+   if (regInstance == NULL)
+   {
       regInstance = new RegisterFile();
    }
    return regInstance;
@@ -40,22 +39,24 @@ RegisterFile * RegisterFile::getInstance()
 /**
  * readRegister
  * returns a register value from the reg array.
- * if regNumber is a valid register number then 
+ * if regNumber is a valid register number then
  * sets error to false and returns
  * the register value; otherwise sets error to
- * true and returns 0 
+ * true and returns 0
  *
  * @param register number
  * @returns reg[regNumber] if regNumber is valid, otherwise 0
  * @returns sets error to false if regNumber is valid, otherwise true
-*/
-uint64_t RegisterFile::readRegister(int32_t regNumber, bool & error)
+ */
+uint64_t RegisterFile::readRegister(int32_t regNumber, bool &error)
 {
-   if (regNumber < 0 || regNumber > 14) {
+   if (regNumber < 0 || regNumber > 14)
+   {
       error = true;
       return 0;
    }
-   else {
+   else
+   {
       error = false;
       return reg[regNumber];
    }
@@ -70,14 +71,16 @@ uint64_t RegisterFile::readRegister(int32_t regNumber, bool & error)
  * @param number of register to be modified (index into reg array)
  * @returns sets error to false if regNumber is valid and true otherwise
  */
-void RegisterFile::writeRegister(uint64_t value, int32_t regNumber, 
-                                 bool & error)
+void RegisterFile::writeRegister(uint64_t value, int32_t regNumber,
+                                 bool &error)
 {
-   if (regNumber < 0 || regNumber > 14) {
+   if (regNumber < 0 || regNumber > 14)
+   {
       error = true;
    }
-   
-   else {
+
+   else
+   {
       reg[regNumber] = value;
       error = false;
    }
@@ -89,17 +92,17 @@ void RegisterFile::writeRegister(uint64_t value, int32_t regNumber,
  */
 void RegisterFile::dump()
 {
-   std::string rnames[15] = {"%rax: ", "%rcx: ", "%rdx: ",  "%rbx: ",
-                             "%rsp: ", "%rbp: ", "%rsi: ",  "%rdi: ", 
-                             "% r8: ", "% r9: ", "%r10: ",  "%r11: ",
-                             "%r12: ", "%r13: ", "%r14: "};  
-   for (int32_t i = 0; i < REGSIZE; i+=4)
+   std::string rnames[15] = {"%rax: ", "%rcx: ", "%rdx: ", "%rbx: ",
+                             "%rsp: ", "%rbp: ", "%rsi: ", "%rdi: ",
+                             "% r8: ", "% r9: ", "%r10: ", "%r11: ",
+                             "%r12: ", "%r13: ", "%r14: "};
+   for (int32_t i = 0; i < REGSIZE; i += 4)
    {
       for (int32_t j = 0; j < 3; j++)
-         std::cout << rnames[i + j] << std::hex << std::setw(16) 
+         std::cout << rnames[i + j] << std::hex << std::setw(16)
                    << std::setfill('0') << reg[i + j] << ' ';
-      if (i + 3 < REGSIZE) 
-         std::cout << rnames[i + 3] << std::hex << std::setw(16) 
+      if (i + 3 < REGSIZE)
+         std::cout << rnames[i + 3] << std::hex << std::setw(16)
                    << std::setfill('0') << reg[i + 3] << std::endl;
       else
          std::cout << std::endl;

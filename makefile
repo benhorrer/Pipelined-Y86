@@ -31,4 +31,3 @@ run:
 	make clean
 	make lab4
 	./run.sh
-
