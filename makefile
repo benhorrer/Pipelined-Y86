@@ -1,5 +1,5 @@
 CC = g++
-CFLAGS = -g -c -Wall -std=c++11 -O0
+CFLAGS = -g -c -Wall -std=c++11 -Og
 OBJ = lab4.o MemoryTester.o Memory.o Tools.o RegisterFile.o \
 RegisterFileTester.o ConditionCodes.o ConditionCodesTester.o
 
@@ -8,24 +8,24 @@ RegisterFileTester.o ConditionCodes.o ConditionCodesTester.o
 
 lab4: $(OBJ)
 
-lab4.o: *.h
-
-MemoryTester.o: MemoryTester.h
-
-Memory.o: Memory.h
+Memory.o: Tools.h Memory.h
 
 Tools.o: Tools.h
 
+MemoryTester.o: MemoryTester.h Memory.h
+
 RegisterFile.o: RegisterFile.h
 
-RegisterFileTester.o: RegisterFileTester.h
+RegisterFileTester.o: RegisterFile.h RegisterFileTester.h
 
-ConditionCodes.o: ConditionCodes.h
+lab4.o: *.h
 
-ConditionCodesTester.o: ConditionCodesTester.h
+ConditionCodes.o: ConditionCodes.h Tools.h
+
+ConditionCodesTester.o: ConditionCodes.h ConditionCodesTester.h
 
 clean:
-	rm $(OBJ) lab4
+	rm $(OBJ)
 
 run:
 	make clean
