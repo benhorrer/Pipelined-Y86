@@ -252,13 +252,12 @@ bool Loader::badFile(std::string filename)
 {
    //Hint: use std::string length method and C strcmp (or std::string find
    //      or std::string at or ...)
-   bool valid = false;
    std::ifstream exists(filename);
    int strLength = filename.length();
-   if (strLength < 4) valid = true;
-   else if (exists.fail()) valid = true;
-   else if (filename.at(strLength-3) != '.' || filename.at(strLength-2) != 'y' || filename.at(strLength-1) != 'o') valid = true;
+   if (strLength < 4) return true;
+   else if (exists.fail()) return true;
+   else if (filename.at(strLength-3) != '.' || filename.at(strLength-2) != 'y' || filename.at(strLength-1) != 'o') return true;
    //else if (filename.at(strLength-2) != 'y') valid = true;
    //else if (filename.at(strLength-1) != 'o') valid = true;
-   return valid;
+   return false;
 }
