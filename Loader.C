@@ -61,18 +61,8 @@ Loader::Loader(int argc, char * argv[])
  */
 bool Loader::hasAddress(std::string line)
 {
-   char _line[line.length()];
-   int32_t *stringEnd;
-   for (int i = 0; i < line.length(); i++) {
-      _line[i] = line[i];
-   } 
-   long int test = stoul(line, &stringEnd, 16);
-   printf("%ld", test);
-   test = strtol(stringEnd, , 16);
-   if (test >= 0 && test < 4096) {
-      return true;
-   }
-   return false;
+   int32_t addr = convert(line, ADDRBEGIN, 2);
+   return true;
 }
 
 /*
@@ -90,14 +80,7 @@ bool Loader::hasAddress(std::string line)
  */
 bool Loader::hasData(std::string line)
 {
-   char _line[line.length()];
-   char *stringEnd;
-   for (int i = 0; i < line.length(); i++) {
-      _line[i] = line[i];
-   } 
-   long int returnLine = strtol(_line, &stringEnd, 16);
-   returnLine = strtol(stringEnd, nullptr, 16);
-   return true;
+   //int32_t 
 }
 
 /*
@@ -148,16 +131,16 @@ void Loader::loadLine(std::string line)
 int32_t Loader::convert(std::string line, int32_t start, int32_t len)
 {
    //Hint: you need something to convert a string to an int such as strtol
-   char _line[line.length()];
-   char *stringEnd;
-   for (int i = start; i < start + len; i++) {
-      _line[i] = line[i];
+   char _line[len+1];
+   //int32_t length = line.copy(_line, len, start);
+   char * stringLine =  new char [line.length() + 1];
+   strcpy(stringLine, line.c_str());
+   for (int i = start; i < (start + len); i++) {
+      _line[i] = stringLine[i];
    } 
-   long int returnLine = strtol(_line, &stringEnd, 16);
-   if (hasData() && hasAddress) {}
-   returnLine = strtol(stringEnd, NULL, 16);
-   //long int returnLine = stoul(line, nullptr, 16);
-   printf("%ld", returnLine);
+   
+
+   long int returnLine = strtol(_line, NULL, 16);
    return returnLine;
 }
 
@@ -288,7 +271,9 @@ bool Loader::badFile(std::string filename)
    int strLength = filename.length();
    if (strLength < 4) return true;
    else if (exists.fail()) return true;
-   else if (filename.at(strLength-3) != '.' || filename.at(strLength-2) != 'y' || filename.at(strLength-1) != 'o') return true;
+   else if (filename.at(strLength-3) != '.' 
+      || filename.at(strLength-2) != 'y' 
+      || filename.at(strLength-1) != 'o') return true;
    //else if (filename.at(strLength-2) != 'y') valid = true;
    //else if (filename.at(strLength-1) != 'o') valid = true;
    return false;
