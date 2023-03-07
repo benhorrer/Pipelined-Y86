@@ -61,6 +61,18 @@ Loader::Loader(int argc, char * argv[])
  */
 bool Loader::hasAddress(std::string line)
 {
+   char _line[line.length()];
+   int32_t *stringEnd;
+   for (int i = 0; i < line.length(); i++) {
+      _line[i] = line[i];
+   } 
+   long int test = stoul(line, &stringEnd, 16);
+   printf("%ld", test);
+   test = strtol(stringEnd, , 16);
+   if (test >= 0 && test < 4096) {
+      return true;
+   }
+   return false;
 }
 
 /*
@@ -78,6 +90,14 @@ bool Loader::hasAddress(std::string line)
  */
 bool Loader::hasData(std::string line)
 {
+   char _line[line.length()];
+   char *stringEnd;
+   for (int i = 0; i < line.length(); i++) {
+      _line[i] = line[i];
+   } 
+   long int returnLine = strtol(_line, &stringEnd, 16);
+   returnLine = strtol(stringEnd, nullptr, 16);
+   return true;
 }
 
 /*
@@ -109,6 +129,7 @@ void Loader::loadLine(std::string line)
    //Use the convert method to convert the characters
    //that represent the address into a number.
    //Also, use the convert method for each byte of data.
+   
 }
 
 /*
@@ -126,7 +147,18 @@ void Loader::loadLine(std::string line)
  */
 int32_t Loader::convert(std::string line, int32_t start, int32_t len)
 {
-   //Hint: you need something to convert a string to an int such as strtol 
+   //Hint: you need something to convert a string to an int such as strtol
+   char _line[line.length()];
+   char *stringEnd;
+   for (int i = start; i < start + len; i++) {
+      _line[i] = line[i];
+   } 
+   long int returnLine = strtol(_line, &stringEnd, 16);
+   if (hasData() && hasAddress) {}
+   returnLine = strtol(stringEnd, NULL, 16);
+   //long int returnLine = stoul(line, nullptr, 16);
+   printf("%ld", returnLine);
+   return returnLine;
 }
 
 /*
