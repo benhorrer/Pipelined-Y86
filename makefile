@@ -1,33 +1,29 @@
 CC = g++
 CFLAGS = -g -c -Wall -std=c++11 -Og
-OBJ = lab4.o MemoryTester.o Memory.o Tools.o RegisterFile.o \
-RegisterFileTester.o ConditionCodes.o ConditionCodesTester.o
+OBJ = lab5.o ConditionCodes.o Memory.o Tools.o RegisterFile.o \
+Loader.o 
 
 .C.o:
 	$(CC) $(CFLAGS) $< -o $@
 
-lab4: $(OBJ)
+lab5: $(OBJ)
+
+Loader.o: Memory.o Loader.o
 
 Memory.o: Tools.h Memory.h
 
 Tools.o: Tools.h
 
-MemoryTester.o: MemoryTester.h Memory.h
-
 RegisterFile.o: RegisterFile.h
 
-RegisterFileTester.o: RegisterFile.h RegisterFileTester.h
-
-lab4.o: *.h
+lab5.o: *.h
 
 ConditionCodes.o: ConditionCodes.h Tools.h
-
-ConditionCodesTester.o: ConditionCodes.h ConditionCodesTester.h
 
 clean:
 	rm $(OBJ)
 
 run:
 	make clean
-	make lab4
+	make lab5
 	./run.sh
