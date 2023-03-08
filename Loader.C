@@ -61,8 +61,12 @@ Loader::Loader(int argc, char * argv[])
  */
 bool Loader::hasAddress(std::string line)
 {
-   int32_t addr = convert(line, ADDRBEGIN, 2);
-   return true;
+   if (line != "" && ((int) line.length() >= 5) && line[0] == '0'){
+      //int32_t addr = convert(line, ADDRBEGIN, 3);  
+      //printf("%d\n", addr);   
+      return true;
+   }
+   return false;
 }
 
 /*
@@ -135,17 +139,20 @@ void Loader::loadLine(std::string line)
 int32_t Loader::convert(std::string line, int32_t start, int32_t len)
 {
    //Hint: you need something to convert a string to an int such as strtol
-   char _line[len+1];
-   //int32_t length = line.copy(_line, len, start);
-   char * stringLine =  new char [line.length() + 1];
-   strcpy(stringLine, line.c_str());
-   for (int i = start; i < (start + len); i++) {
-      _line[i] = stringLine[i];
-   } 
-   
+   char _line[len];
 
-   long int returnLine = strtol(_line, NULL, 16);
-   return returnLine;
+   //char _line[4] = {0, 0, 0, 0};
+
+   //int32_t length = line.copy(_line, len, start);
+   // char stringLine[line.length() + 1];
+   // strcpy(stringLine, line.c_str());
+   for (int i = start, j = 0; j < len; i++, j++) {
+      _line[j] = line[i];
+   } 
+   // _line[len] = 0;
+   //int32_t var = strtol(_line, NULL, 16);
+   //return var;
+   return strtol(_line, NULL, 16);
 }
 
 /*
