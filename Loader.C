@@ -119,7 +119,14 @@ void Loader::loadLine(std::string line)
    //Use the convert method to convert the characters
    //that represent the address into a number.
    //Also, use the convert method for each byte of data.
-   
+   bool errors = false;
+   lastAddress = convert(line, ADDRBEGIN, 3);
+   int32_t currentByte = DATABEGIN;
+   while(line[currentByte] != ' ') {
+      Memory::getInstance()->putByte(convert(line, currentByte, 2), lastAddress, errors);
+      currentByte += 2;
+      lastAddress++;
+   }
 }
 
 /*
