@@ -94,6 +94,10 @@ bool Loader::hasData(std::string line)
  */
 bool Loader::hasComment(std::string line)
 {
+    if (line.length() >= COMMENT
+     && line.at(COMMENT) == '|') {
+        return true;
+    } else return false;
 }
 
 /*
@@ -155,12 +159,7 @@ int32_t Loader::convert(std::string line, int32_t start, int32_t len)
  */
 bool Loader::hasErrors(std::string line)
 {
-   //checking for errors in a particular order can significantly 
-   //simplify your code
-   //1) line is at least COMMENT characters long and contains a '|' in 
-   //   column COMMENT. If not, return true
-   //   Hint: use hasComment
-   //
+   //1) Hint: use hasComment
    //2) check whether line has an address.  If it doesn't,
    //   return result of isSpaces (line must be all spaces up
    //   to the | character)
@@ -243,6 +242,10 @@ bool Loader::errorAddr(std::string line)
  */
 bool Loader::isSpaces(std::string line, int32_t start, int32_t end)
 {
+    for (int32_t itr = start; itr <= end; i++) {
+        if (line.at(itr) != ' ') return false;
+    }
+    return true;        
 }
 
 /*
