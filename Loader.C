@@ -164,6 +164,18 @@ int32_t Loader::convert(std::string line, int32_t start, int32_t len)
  */
 bool Loader::hasErrors(std::string line)
 {
+   if (!hasComment(line)) return true;
+   if (!hasAddress(line)) {
+       return !isSpaces(line, 0, (COMMENT - 1));
+   }
+   if (errorAddr(line)) return true;
+   if (!hasData(line)) {
+       return !isSpaces(line, DATABEGIN, (COMMENT - 1));
+   }
+   //if (errorData(line, ) return true;
+   int32_t lineNumber = convert(line, ADDRBEGIN, 3);
+   if (lineNumber < lastAddress) return true;
+   
    //1) Hint: use hasComment
    //2) check whether line has an address.  If it doesn't,
    //   return result of isSpaces (line must be all spaces up
