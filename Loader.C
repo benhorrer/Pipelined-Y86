@@ -61,9 +61,7 @@ Loader::Loader(int argc, char * argv[])
  */
 bool Loader::hasAddress(std::string line)
 {
-   if (line != "" && ((int) line.length() >= 5) && line[0] == '0'){
-      //int32_t addr = convert(line, ADDRBEGIN, 3);  
-      //printf("%d\n", addr);   
+   if (line != "" && ((int) line.length() >= 5) && line[0] == '0') {
       return true;
    }
    return false;
@@ -84,7 +82,8 @@ bool Loader::hasAddress(std::string line)
  */
 bool Loader::hasData(std::string line)
 {
-   //int32_t 
+   if (line.at(DATABEGIN) != ' ') return true;
+   return false;
 }
 
 /*
@@ -98,6 +97,10 @@ bool Loader::hasData(std::string line)
  */
 bool Loader::hasComment(std::string line)
 {
+    if (line.length() >= COMMENT && line.at(COMMENT) == '|') {
+        return true;
+    }
+    return false;
 }
 
 /*
@@ -116,7 +119,14 @@ void Loader::loadLine(std::string line)
    //Use the convert method to convert the characters
    //that represent the address into a number.
    //Also, use the convert method for each byte of data.
-   
+   bool errors = false;
+   lastAddress = convert(line, ADDRBEGIN, 3);
+   int32_t currentByte = DATABEGIN;
+   while(line[currentByte] != ' ') {
+      Memory::getInstance()->putByte(convert(line, currentByte, 2), lastAddress, errors);
+      currentByte += 2;
+      lastAddress++;
+   }
 }
 
 /*
@@ -137,17 +147,9 @@ int32_t Loader::convert(std::string line, int32_t start, int32_t len)
    //Hint: you need something to convert a string to an int such as strtol
    char _line[len];
 
-   //char _line[4] = {0, 0, 0, 0};
-
-   //int32_t length = line.copy(_line, len, start);
-   // char stringLine[line.length() + 1];
-   // strcpy(stringLine, line.c_str());
    for (int i = start, j = 0; j < len; i++, j++) {
       _line[j] = line[i];
    } 
-   // _line[len] = 0;
-   //int32_t var = strtol(_line, NULL, 16);
-   //return var;
    return strtol(_line, NULL, 16);
 }
 
@@ -162,12 +164,7 @@ int32_t Loader::convert(std::string line, int32_t start, int32_t len)
  */
 bool Loader::hasErrors(std::string line)
 {
-   //checking for errors in a particular order can significantly 
-   //simplify your code
-   //1) line is at least COMMENT characters long and contains a '|' in 
-   //   column COMMENT. If not, return true
-   //   Hint: use hasComment
-   //
+   //1) Hint: use hasComment
    //2) check whether line has an address.  If it doesn't,
    //   return result of isSpaces (line must be all spaces up
    //   to the | character)
@@ -219,7 +216,11 @@ bool Loader::hasErrors(std::string line)
  */
 bool Loader::errorData(std::string line, int32_t & numDBytes)
 {
-   //Hint: use isxdigit and isSpaces
+   for (int32_t itr = DATABEGIN; itr <= (itr + numDBytes); itr++) {
+       if (!isxdigit(line[itr])) return true;
+   }
+   if (!isSpaces(line, (DATABEGIN + numDBytes), (COMMENT - 1))) return true;
+   return false;
 }
 
 /*
@@ -234,6 +235,11 @@ bool Loader::errorData(std::string line, int32_t & numDBytes)
 bool Loader::errorAddr(std::string line)
 {
    //Hint: use isxdigit
+   if (isxdigit(line[ADDRBEGIN]) && isxdigit(line[ADDRBEGIN + 1]) && 
+   isxdigit(line[ADDREND])) {
+       return false;
+   }
+   return true;
 }
 
 /* 
@@ -250,6 +256,10 @@ bool Loader::errorAddr(std::string line)
  */
 bool Loader::isSpaces(std::string line, int32_t start, int32_t end)
 {
+    for (int32_t itr = start; itr <= end; itr++) {
+        if (line.at(itr) != ' ') return false;
+    }
+    return true;        
 }
 
 /*
@@ -281,7 +291,5 @@ bool Loader::badFile(std::string filename)
    else if (filename.at(strLength-3) != '.' 
       || filename.at(strLength-2) != 'y' 
       || filename.at(strLength-1) != 'o') return true;
-   //else if (filename.at(strLength-2) != 'y') valid = true;
-   //else if (filename.at(strLength-1) != 'o') valid = true;
    return false;
 }
