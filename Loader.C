@@ -172,7 +172,7 @@ bool Loader::hasErrors(std::string line)
    if (!hasData(line)) {
        return !isSpaces(line, DATABEGIN, (COMMENT - 1));
    }
-   //if (errorData(line, ) return true;
+   //if (errorData(line) return true;
    int32_t lineNumber = convert(line, ADDRBEGIN, 3);
    if (lineNumber < lastAddress) return true;
    
@@ -228,6 +228,7 @@ bool Loader::hasErrors(std::string line)
  */
 bool Loader::errorData(std::string line, int32_t & numDBytes)
 {
+   if ((numDBytes % 2) != 0) return true;
    for (int32_t itr = DATABEGIN; itr <= (itr + numDBytes); itr++) {
        if (!isxdigit(line[itr])) return true;
    }
@@ -246,6 +247,8 @@ bool Loader::errorData(std::string line, int32_t & numDBytes)
  */
 bool Loader::errorAddr(std::string line)
 {
+   if (line[0] != '0' || line[1] != 'x') return true;
+   if (line[ADDREND + 1] != ':' || line[ADDREND + 2] != ' ') return true;
    //Hint: use isxdigit
    if (isxdigit(line[ADDRBEGIN]) && isxdigit(line[ADDRBEGIN + 1]) && 
    isxdigit(line[ADDREND])) {
