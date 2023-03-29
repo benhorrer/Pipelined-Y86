@@ -164,6 +164,25 @@ int32_t Loader::convert(std::string line, int32_t start, int32_t len)
  */
 bool Loader::hasErrors(std::string line)
 {
+   if (!hasComment(line)) return true;
+   if (!hasAddress(line)) {
+       return !isSpaces(line, 0, (COMMENT - 1));
+   }
+   if (errorAddr(line)) return true;
+   if (!hasData(line)) {
+       return !isSpaces(line, DATABEGIN, (COMMENT - 1));
+   }
+   int count = 1;
+   for (int i = 8; line[i] != ' '; i++) {
+      count++;
+   }
+   
+   //if (count % 2 != 0) return true;
+   //count = count /2;
+   if (errorData(line, count)) return true;
+   int32_t currentAddr = convert(line, ADDRBEGIN, 3);
+   if (currentAddr < lastAddress) return true;
+
    //1) Hint: use hasComment
    //2) check whether line has an address.  If it doesn't,
    //   return result of isSpaces (line must be all spaces up
