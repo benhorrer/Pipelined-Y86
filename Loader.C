@@ -176,6 +176,7 @@ bool Loader::hasErrors(std::string line)
    for (int i = 8; line[i] != ' '; i++) {
       count++;
    }
+   
    //if (count % 2 != 0) return true;
    //count = count /2;
    if (errorData(line, count)) return true;
