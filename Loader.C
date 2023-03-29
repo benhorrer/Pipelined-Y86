@@ -172,9 +172,15 @@ bool Loader::hasErrors(std::string line)
    if (!hasData(line)) {
        return !isSpaces(line, DATABEGIN, (COMMENT - 1));
    }
-   //if (errorData(line) return true;
-   int32_t lineNumber = convert(line, ADDRBEGIN, 3);
-   if (lineNumber < lastAddress) return true;
+   int count = 1;
+   for (int i = 8; line[i] != ' '; i++) {
+      count++;
+   }
+   //if (count % 2 != 0) return true;
+   //count = count /2;
+   if (errorData(line, count)) return true;
+   int32_t currentAddr = convert(line, ADDRBEGIN, 3);
+   if (currentAddr < lastAddress) return true;
    
    //1) Hint: use hasComment
    //2) check whether line has an address.  If it doesn't,
@@ -229,10 +235,10 @@ bool Loader::hasErrors(std::string line)
 bool Loader::errorData(std::string line, int32_t & numDBytes)
 {
    if ((numDBytes % 2) != 0) return true;
-   for (int32_t itr = DATABEGIN; itr <= (itr + numDBytes); itr++) {
+   for (int32_t itr = DATABEGIN; itr < (DATABEGIN + (numDBytes)); itr++) {
        if (!isxdigit(line[itr])) return true;
    }
-   if (!isSpaces(line, (DATABEGIN + numDBytes), (COMMENT - 1))) return true;
+   if (!isSpaces(line, (DATABEGIN + (numDBytes)), (COMMENT - 1))) return true;
    return false;
 }
 
