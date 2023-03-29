@@ -182,6 +182,7 @@ bool Loader::hasErrors(std::string line)
    if (errorData(line, count)) return true;
    int32_t currentAddr = convert(line, ADDRBEGIN, 3);
    if (currentAddr < lastAddress) return true;
+   if (currentAddr + (count / 2) > MEMSIZE) return true;
    
    //1) Hint: use hasComment
    //2) check whether line has an address.  If it doesn't,
