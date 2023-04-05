@@ -5,6 +5,7 @@
 #include "PipeReg.h"
 #include "F.h"
 #include "D.h"
+#include "E.h"
 #include "M.h"
 #include "W.h"
 #include "Stage.h"
@@ -14,8 +15,37 @@
 
 bool DecodeStage::doClockLow(PipeReg ** pregs, Stage ** stages)
 {
-    setEInput(pregs[2], pregs[1]->getstat(), pregs[1]->geticode(), pregs[1]->getifun(),
-                pregs[1]->getvalC(), pregs[1]->getvalP(),  )
+   E * ereg = (E *) pregs[EREG];
+   D * dreg = (D *) pregs[DREG];
+   uint64_t regA;
+   uint64_t regB;
+   PipeRegField * _dstE;
+   PipeRegField * _dstM;
+
+   uint64_t dregIcode = dreg->geticode()->getOutput();
+
+   if (dregIcode == 0x00 || dregIcode == 0x10 || dregIcode == 0x90) {
+         regA = NULL;
+         regB = NULL;
+      }
+
+   else if ((0x20 <= dregIcode <= 0x26) || dregIcode == 0x40 || 
+            dregIcode == 0x50 || (0x60 <= dregIcode <= 0x63)) {
+               regA = dreg->getrA()->getOutput();
+               regB = dreg->getrB()->getOutput();
+      }
+
+   else if (dregIcode == 0x30) {
+         regA = 0xF;
+         regB = dreg->getrB()->getOutput();
+      }
+
+   else {
+      regA = dreg->getrA()->getOutput();
+   }
+    setEInput(E * ereg, dreg->getstat(), dreg->geticode(), dreg->getifun(),
+                dreg->getvalC(), regA, regB, regA, regB);
+
 }
 
 void DecodeStage::setEInput(E * ereg, uint64_t stat, uint64_t icode, 
@@ -38,5 +68,17 @@ void DecodeStage::setEInput(E * ereg, uint64_t stat, uint64_t icode,
 void DecodeStage::doClockHigh(PipeReg ** pregs)
 {
 
+   E * ereg = (E *) pregs[EREG];
+
+   ereg->getstat()->normal();
+   ereg->geticode()->normal();
+   ereg->getifun()->normal();
+   ereg->getvalC()->normal();
+   ereg->getvalA()->normal();
+   ereg->getvalB()->normal();
+   ereg->getdstE()->normal();
+   ereg->getdstM()-normal();
+   ereg->getsrcA()->normal();
+   ereg->getsrcB()->normal();
 }
 
