@@ -8,14 +8,14 @@
 #include "M.h"
 #include "W.h"
 #include "Stage.h"
-#include "FetchStage.h"
+#include "WritebackStage.h"
 #include "Status.h"
 #include "Debug.h"
 
 
 bool WritebackStage::doClockLow(PipeReg ** pregs, Stage ** stages)
 {
-
+    return true;
 }
 
 void WritebackStage::doClockHigh(PipeReg ** pregs)
