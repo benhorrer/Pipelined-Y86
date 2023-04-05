@@ -1,7 +1,8 @@
 CC = g++
 CFLAGS = -g -c -Wall -std=c++11 -Og
 OBJ = yess.o ConditionCodes.o Memory.o Tools.o RegisterFile.o \
-Loader.o PipeReg.o Simulate.o 
+Loader.o PipeReg.o Simulate.o PipeRegField.o FetchStage.o F.o DecodeStage.o D.o \
+ExecuteStage.o E.o MemoryStage.o M.o WritebackStage.o W.o
 HEADEROBJ = ConditionCodes.h Memory.h Tools.h RegisterFile.h \
 Loader.h Debug.h PipeReg.h Stage.h Simulate.h 
 
@@ -38,7 +39,9 @@ PipeReg.o:
 
 PipeRegField.o:
 
-Simulate.o: *.h
+Simulate.o: PipeRegField.h PipeReg.h F.h D.h E.h M.h W.h \
+Stage.h ExecuteStage.h MemoryStage.h DecodeStage.h FetchStage.h WritebackStage.h \
+Memory.h RegisterFile.h ConditionCodes.h
 
 W.o: RegisterFile.h Instructions.h PipeRegField.h PipeReg.h Status.h
 

@@ -7,8 +7,9 @@
 #include "D.h"
 #include "M.h"
 #include "W.h"
+#include "E.h"
 #include "Stage.h"
-#include "FetchStage.h"
+#include "ExecuteStage.h"
 #include "Status.h"
 #include "Debug.h"
 
@@ -22,8 +23,7 @@ bool ExecuteStage::doClockLow(PipeReg ** pregs, Stage ** stages)
 
     uint64_t eregIcode = ereg->geticode()->getOutput();
     
-    setMInput(mreg, ereg->getstat()->getOutput(), eregIcode,
-                ereg->getCnd()->getOutput(), ereg->getdstE()->getOutput(),
+    setMInput(mreg, ereg->getstat()->getOutput(), eregIcode, ereg->getdstE()->getOutput(),
                 ereg->getdstM()->getOutput(), ereg->getvalA()->getOutput(),
                 Cnd, valE);
 
@@ -45,14 +45,14 @@ void ExecuteStage::setMInput(M * mreg, uint64_t stat, uint64_t icode,
 void ExecuteStage::doClockHigh(PipeReg ** pregs)
 {
 
-    M * mreg = (E *) pregs[MREG];
+    M * mreg = (M *) pregs[MREG];
 
-    mreg->getstat()->setInput(stat);
-    mreg->geticode()->setInput(icode);
-    mreg->getCnd()->setInput(Cnd);
-    mreg->getvalE()->setInput(valE);
-    mreg->getvalA()->setInput(valA);
-    mreg->getdstE()->setInput(dstE);
-    mreg->getdstM()->setInput(dstM);
+    mreg->getstat()->normal();
+    mreg->geticode()->normal();
+    mreg->getCnd()->normal();
+    mreg->getvalE()->normal();
+    mreg->getvalA()->normal();
+    mreg->getdstE()->normal();
+    mreg->getdstM()->normal();
 }
 
