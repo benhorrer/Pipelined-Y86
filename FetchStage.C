@@ -11,6 +11,7 @@
 #include "FetchStage.h"
 #include "Status.h"
 #include "Debug.h"
+#include "Instructions.h"
 
 
 /*
@@ -89,5 +90,44 @@ void FetchStage::setDInput(D * dreg, uint64_t stat, uint64_t icode,
    dreg->getrB()->setInput(rB);
    dreg->getvalC()->setInput(valC);
    dreg->getvalP()->setInput(valP);
+}
+
+uint64_t FetchStage::selectPC(F * freg, M * mreg, W * wreg)
+{
+    if (mreg->geticode()->getOutput() == IJXX && !mreg->getCnd()->getOutput()) return mreg->getvalA()->getOutput();
+    else if (wreg->geticode()->getOutput() == IRET) return wreg->getvalM()->getOutput();
+    return 0; //supposed to be F_predPC but i dont know how to get that;
+}
+
+bool FetchStage::needRegIds(uint64_t f_icode)
+{
+    if (f_icode == IRRMOVQ || f_icode == IOPQ || f_icode == IPUSHQ ||
+        f_icode == IPOPQ || f_icode == IIRMOVQ || f_icode == IRMMOVQ ||
+        f_icode == IMRMOVQ)
+    {
+        return true;
+    }
+    return false;
+}
+
+bool FetchStage::needValC(uint64_t f_icode)
+{
+    if (f_icode == IIRMOVQ || f_icode == IRMMOVQ || f_icode == IMRMOVQ ||
+        f_icode == IJXX || f_icode == ICALL)
+    {
+        return true;
+    }
+    return false;
+}
+
+uint64_t FetchStage::PCIncrement(uint64_t f_pc, bool f_needRegIds, bool f_needValC)
+{
+    return 0;
+}
+
+uint64_t FetchStage::predictPC(uint64_t f_icode, uint64_t f_valC, uint64_t f_valP)
+{
+    if (f_icode == IJXX || f_icode == ICALL) return f_valC;
+    return f_valP;
 }
      
