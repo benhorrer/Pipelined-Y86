@@ -27,6 +27,8 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
 {
    F * freg = (F *) pregs[FREG];
    D * dreg = (D *) pregs[DREG];
+   M * mreg = (M *) pregs[MREG];
+   W * wreg = (W *) pregs[WREG];
    uint64_t f_pc = 0, icode = 0, ifun = 0, valC = 0, valP = 0;
    uint64_t rA = RNONE, rB = RNONE, stat = SAOK;
 
@@ -38,7 +40,7 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
    //written.
 
    //The value passed to setInput below will need to be changed
-   freg->getpredPC()->setInput(f_pc + 1);
+   valP = PCIncrement(f_pc, needRegIds(icode), needValC(icode));
 
    //provide the input values for the D register
    setDInput(dreg, stat, icode, ifun, rA, rB, valC, valP);
@@ -96,7 +98,7 @@ uint64_t FetchStage::selectPC(F * freg, M * mreg, W * wreg)
 {
     if (mreg->geticode()->getOutput() == IJXX && !mreg->getCnd()->getOutput()) return mreg->getvalA()->getOutput();
     else if (wreg->geticode()->getOutput() == IRET) return wreg->getvalM()->getOutput();
-    return 0; //supposed to be F_predPC but i dont know how to get that;
+    return freg->getpredPC()->getOutput(); //supposed to be F_predPC but i dont know how to get that;
 }
 
 bool FetchStage::needRegIds(uint64_t f_icode)
@@ -122,7 +124,10 @@ bool FetchStage::needValC(uint64_t f_icode)
 
 uint64_t FetchStage::PCIncrement(uint64_t f_pc, bool f_needRegIds, bool f_needValC)
 {
-    return 0;
+    uint64_t location = f_pc + 1;
+    if (f_needRegIds) location += 1;
+    if (f_needValC) location += 8;
+    return location; 
 }
 
 uint64_t FetchStage::predictPC(uint64_t f_icode, uint64_t f_valC, uint64_t f_valP)
