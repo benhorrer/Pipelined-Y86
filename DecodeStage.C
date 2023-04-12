@@ -17,26 +17,35 @@ bool DecodeStage::doClockLow(PipeReg ** pregs, Stage ** stages)
 {
    E * ereg = (E *) pregs[EREG];
    D * dreg = (D *) pregs[DREG];
-   uint64_t valA;
-   uint64_t valB;
-   uint64_t dstE;
-   uint64_t dstM;
-   uint64_t srcA;
-   uint64_t srcB;
+   uint64_t valA, valB = 0;
+   uint64_t dstE, dstM, srcA, srcB = RNONE;
    
 
    uint64_t dregIcode = dreg->geticode()->getOutput();
-   valA = 0;
-   valB = 0;
-   dstE = RNONE;
-   dstM = RNONE;
-   srcA = RNONE;
-   srcB = RNONE;
-
+   // set srcA
+   if (dregIcode == IRRMOVQ || dregIcode == IRMMOVQ ||
+       dregIcode == IOPQ || dregIcode == IPUSHQ)
+   {
+       srcA = dreg->getrA()->getOutput();
+   }
+   else if (dregIcode == IPOPQ || dregIcode == IRET)
+   {
+       srcA = 4;
+   }
+   // set srcB
+   if (dregIcode == IOPQ || dregIcode == IRMMOVQ ||
+       dregIcode == IMRMOVQ)
+   {
+       srcB = dreg->getrB()->getOutput();
+   }
+   else if (dregIcode == IPUSHQ || dregIcode == IPOPQ || 
+            dregIcode == ICALL || dregIcode == IRET)
+   {
+       srcB = 4;
+   }
    setEInput(ereg, dreg->getstat()->getOutput(), dregIcode,
                dreg->getifun()->getOutput(), dreg->getvalC()->getOutput(),
                valA, valB, dstE, dstM, srcA, srcB);
-
    /*
    if (0x60 <= dregIcode <= 0x63) {
       valA = dreg->getrA()->getOutput();
