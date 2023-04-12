@@ -26,26 +26,29 @@ bool DecodeStage::doClockLow(PipeReg ** pregs, Stage ** stages)
    
 
    uint64_t dregIcode = dreg->geticode()->getOutput();
+
+   if (dreg->get)
+
    valA = 0;
    valB = 0;
    dstE = RNONE;
    dstM = RNONE;
    srcA = RNONE;
    srcB = RNONE;
-
+ 
    setEInput(ereg, dreg->getstat()->getOutput(), dregIcode,
                dreg->getifun()->getOutput(), dreg->getvalC()->getOutput(),
                valA, valB, dstE, dstM, srcA, srcB);
 
    /*
-   if (0x60 <= dregIcode <= 0x63) {
+   if (dregIcode == 6) {
       valA = dreg->getrA()->getOutput();
       valB = dreg->getrA()->getOutput();
       regA = dreg->getrA()->getOutput();
       regB = dreg->getrB()->getOutput();
    }
    
-   if (dregIcode == 0x00 || dregIcode == 0x10 || dregIcode == 0x90) {
+   if (dregIcode == 0x0 || dregIcode == 0x1 || dregIcode == 0x9) {
          regA = NULL;
          regB = NULL;
          dstE = NULL;
@@ -56,13 +59,13 @@ bool DecodeStage::doClockLow(PipeReg ** pregs, Stage ** stages)
          srcB = NULL;
       }
 
-   else if ((0x20 <= dregIcode <= 0x26) || dregIcode == 0x40 || 
-            dregIcode == 0x50 || (0x60 <= dregIcode <= 0x63)) {
+   else if (dregIcode == 0x2 || dregIcode == 0x4 || 
+            dregIcode == 0x5 || dregIcode == 0x6) {
                regA = dreg->getrA()->getOutput();
                regB = dreg->getrB()->getOutput();
       }
 
-   else if (dregIcode == 0x30) {
+   else if (dregIcode == 0x3) {
          regA = 0xF;
          regB = dreg->getrB()->getOutput();
       }
