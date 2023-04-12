@@ -12,6 +12,7 @@
 #include "Status.h"
 #include "Debug.h"
 #include "Instructions.h"
+#include "Memory.h"
 
 
 /*
@@ -38,9 +39,17 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
    //rA, rB, and valC to be set.
    //The lab assignment describes what methods need to be
    //written.
-
+   f_pc = selectPC(freg, mreg, wreg);
+   bool error = false;
+   uint64_t inst = Memory::getInstance()->getByte(f_pc, error);
+   if (!error)
+   {
+       icode = inst >> 4;
+       ifun = 0xf & inst; 
+   }
    //The value passed to setInput below will need to be changed
    valP = PCIncrement(f_pc, needRegIds(icode), needValC(icode));
+   freg->getpredPC()->setInput(predictPC(icode, valC, valP));
 
    //provide the input values for the D register
    setDInput(dreg, stat, icode, ifun, rA, rB, valC, valP);
@@ -98,7 +107,7 @@ uint64_t FetchStage::selectPC(F * freg, M * mreg, W * wreg)
 {
     if (mreg->geticode()->getOutput() == IJXX && !mreg->getCnd()->getOutput()) return mreg->getvalA()->getOutput();
     else if (wreg->geticode()->getOutput() == IRET) return wreg->getvalM()->getOutput();
-    return freg->getpredPC()->getOutput(); //supposed to be F_predPC but i dont know how to get that;
+    return freg->getpredPC()->getOutput();
 }
 
 bool FetchStage::needRegIds(uint64_t f_icode)
