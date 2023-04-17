@@ -79,7 +79,7 @@ bool ExecuteStage::doClockLow(PipeReg ** pregs, Stage ** stages)
 }
 
 //false == negative , true == positive
-bool sign(uint64_t x) {
+bool ExecuteStage::sign(uint64_t x) {
         if (x >= 0) {
             return true;
         }
