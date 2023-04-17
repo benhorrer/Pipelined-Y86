@@ -39,8 +39,8 @@ bool ExecuteStage::doClockLow(PipeReg ** pregs, Stage ** stages)
     
     //setting AluA
     if (eregIcode == IRRMOVQ || eregIcode == IOPQ) aluA = ereg->getvalA()->getOutput();
-    else if (eregIcode == IRRMOVQ || eregIcode == IRMMOVQ || 
-                eregIcode == IMRMOVQ) ereg->getvalC()->getOutput();
+    else if (eregIcode == IIRMOVQ || eregIcode == IRMMOVQ || 
+                eregIcode == IMRMOVQ) aluA = ereg->getvalC()->getOutput();
     else if (eregIcode == ICALL || eregIcode == IPUSHQ) aluA = -8;
     else if (eregIcode == IRET || eregIcode == IPOPQ) aluA = 8;
 
@@ -77,10 +77,6 @@ bool ExecuteStage::doClockLow(PipeReg ** pregs, Stage ** stages)
             OF = 0;
         }
     }
-
-    //setting d_ValA
-    if (dreg->get)
-
     
 
 

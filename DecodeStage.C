@@ -18,6 +18,8 @@ bool DecodeStage::doClockLow(PipeReg ** pregs, Stage ** stages)
 {
    E * ereg = (E *) pregs[EREG];
    D * dreg = (D *) pregs[DREG];
+   M * mreg = (M *) pregs[MREG];
+   W * wreg = (W *) pregs[WREG];
    uint64_t valA = 0, valB = 0;
    uint64_t dstE = RNONE, dstM = RNONE, srcA = RNONE, srcB = RNONE;
    RegisterFile * regInst = RegisterFile::getInstance();
@@ -61,15 +63,22 @@ bool DecodeStage::doClockLow(PipeReg ** pregs, Stage ** stages)
        dstM = dreg->getrA()->getOutput();
    }
    // Sel + FwdA 
-
-   bool selError = false;
-   uint64_t d_valA = regInst->readRegister(dreg->getrA()->getOutput(), selError);
-   valA = d_valA;
+    if (srcA == ereg->getdstE()->getOutput()) valA = ereg->getvalC()->getOutput();
+    else if (srcA == mreg->getvalE()->getOutput()) valA = mreg->getvalE()->getOutput();
+    else if (srcA == wreg->getdstE()->getOutput()) valA = wreg->getvalE()->getOutput();
+    else {
+        bool selError = false;
+        valA = regInst->readRegister(dreg->getrA()->getOutput(), selError);
+    }
 
    //FwdB
-   bool FwdBError = false;
-   uint64_t d_valB = regInst->readRegister(dreg->getrB()->getOutput(), FwdBError);
-   valB = d_valB;
+     if (srcB == ereg->getdstE()->getOutput()) valB = ereg->getvalC()->getOutput();
+    else if (srcB == mreg->getvalE()->getOutput()) valB = mreg->getvalE()->getOutput();
+    else if (srcB == wreg->getdstE()->getOutput()) valB = wreg->getvalE()->getOutput();
+    else {
+        bool selError = false;
+        valB = regInst->readRegister(dreg->getrB()->getOutput(), selError);
+    }
 
    setEInput(ereg, dreg->getstat()->getOutput(), dregIcode,
                dreg->getifun()->getOutput(), dreg->getvalC()->getOutput(),
