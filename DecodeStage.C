@@ -12,6 +12,7 @@
 #include "DecodeStage.h"
 #include "Status.h"
 #include "Debug.h"
+#include "Instructions.h"
 
 bool DecodeStage::doClockLow(PipeReg ** pregs, Stage ** stages)
 {
@@ -43,43 +44,27 @@ bool DecodeStage::doClockLow(PipeReg ** pregs, Stage ** stages)
    {
        srcB = 4;
    }
+   // set dstE
+   if (dregIcode == IRRMOVQ || dregIcode == IIRMOVQ ||
+       dregIcode == IOPQ)
+   {
+       dstE = dreg->getrB()->getOutput();
+   } 
+   else if (dregIcode == IPUSHQ || dregIcode == IPOPQ || 
+            dregIcode == ICALL || dregIcode == IRET)
+   {
+       dstE = 4;
+   }
+   // set dstM
+   if (dregIcode == IMRMOVQ || dregIcode == IPOPQ)
+   {
+       dstM = dreg->getrA()->getOutput();
+   }
+   // Sel + FwdA 
+
    setEInput(ereg, dreg->getstat()->getOutput(), dregIcode,
                dreg->getifun()->getOutput(), dreg->getvalC()->getOutput(),
                valA, valB, dstE, dstM, srcA, srcB);
-   /*
-   if (0x60 <= dregIcode <= 0x63) {
-      valA = dreg->getrA()->getOutput();
-      valB = dreg->getrA()->getOutput();
-      regA = dreg->getrA()->getOutput();
-      regB = dreg->getrB()->getOutput();
-   }
-   
-   if (dregIcode == 0x00 || dregIcode == 0x10 || dregIcode == 0x90) {
-         regA = NULL;
-         regB = NULL;
-         dstE = NULL;
-         dstM = NULL;
-         valA = NULL;
-         valB = NULL;
-         srcA = NULL;
-         srcB = NULL;
-      }
-
-   else if ((0x20 <= dregIcode <= 0x26) || dregIcode == 0x40 || 
-            dregIcode == 0x50 || (0x60 <= dregIcode <= 0x63)) {
-               regA = dreg->getrA()->getOutput();
-               regB = dreg->getrB()->getOutput();
-      }
-
-   else if (dregIcode == 0x30) {
-         regA = 0xF;
-         regB = dreg->getrB()->getOutput();
-      }
-
-   else {
-      regA = dreg->getrA()->getOutput();
-   }
-   */
     
 
 }
