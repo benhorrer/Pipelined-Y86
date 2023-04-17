@@ -20,7 +20,7 @@ bool DecodeStage::doClockLow(PipeReg ** pregs, Stage ** stages)
    D * dreg = (D *) pregs[DREG];
    uint64_t valA, valB = 0;
    uint64_t dstE, dstM, srcA, srcB = RNONE;
-   
+   RegisterFile * regInst = RegisterFile::getInstance();
 
    uint64_t dregIcode = dreg->geticode()->getOutput();
    // set srcA
@@ -61,6 +61,15 @@ bool DecodeStage::doClockLow(PipeReg ** pregs, Stage ** stages)
        dstM = dreg->getrA()->getOutput();
    }
    // Sel + FwdA 
+
+   bool selError = false;
+   uint64_t d_valA = regInst->readRegister(dreg->getrA()->getOutput(), selError);
+   valA = d_valA;
+
+   //FwdB
+   bool FwdBError = false;
+   uint64_t d_valB = regInst->readRegister(dreg->getrB()->getOutput(), FwdBError);
+   valB = d_valB;
 
    setEInput(ereg, dreg->getstat()->getOutput(), dregIcode,
                dreg->getifun()->getOutput(), dreg->getvalC()->getOutput(),

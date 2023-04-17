@@ -67,7 +67,7 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
        }
    }
    if (needValC(icode)) {
-        valC = buildValC(f_pc);
+        valC = buildValC(f_pc, icode);
    }
    //The value passed to setInput below will need to be changed
    valP = PCIncrement(f_pc, needRegIds(icode), needValC(icode));
@@ -145,7 +145,7 @@ bool FetchStage::needRegIds(uint64_t f_icode)
 
 uint64_t FetchStage::getRegIds(uint64_t f_pc)
 {  bool error = false;
-   uint64_t ids = Tools::getBits(Memory::getInstance()->getLong(f_pc, error), 8, 15);
+   uint64_t ids = Memory::getInstance()->getByte(f_pc + 1, error);
    return ids; 
 }
 
@@ -159,9 +159,21 @@ bool FetchStage::needValC(uint64_t f_icode)
     return false;
 }
 
-uint64_t FetchStage::buildValC(uint64_t f_pc) {
+uint64_t FetchStage::buildValC(uint64_t f_pc, uint64_t f_icode) {
     bool error = false;
-    uint64_t valC = Tools::getBits(Memory::getInstance()->getLong(f_pc, error), 16, 80);
+    uint64_t valC;
+    uint8_t i;
+    if (f_icode == IJXX || f_icode == ICALL) {
+        i = 1;
+    }
+    else {
+        i = 2;
+    }
+    for (int j = 0; j < 8; j++) {
+        valC += Memory::getInstance()->getLong(f_pc + i, error);
+        valC << 2;
+        i++;
+    }
     return valC;
 }
 
