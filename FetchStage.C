@@ -161,20 +161,18 @@ bool FetchStage::needValC(uint64_t f_icode)
 
 uint64_t FetchStage::buildValC(uint64_t f_pc, uint64_t f_icode) {
     bool error = false;
-    uint64_t valC;
-    uint8_t i;
-    if (f_icode == IJXX || f_icode == ICALL) {
-        i = 1;
+    uint64_t f_valC = 0;
+    f_pc++;
+    if (getRegIds(f_pc)) {
+        f_pc++;
     }
-    else {
-        i = 2;
-    }
+
     for (int j = 0; j < 8; j++) {
-        valC += Memory::getInstance()->getLong(f_pc + i, error);
-        valC << 2;
-        i++;
+        f_valC += Memory::getInstance()->getByte(f_pc++, error);
+        f_valC = f_valC << 8;
+
     }
-    return valC;
+    return f_valC;
 }
 
 uint64_t FetchStage::PCIncrement(uint64_t f_pc, bool f_needRegIds, bool f_needValC)

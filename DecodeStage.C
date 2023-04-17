@@ -18,8 +18,8 @@ bool DecodeStage::doClockLow(PipeReg ** pregs, Stage ** stages)
 {
    E * ereg = (E *) pregs[EREG];
    D * dreg = (D *) pregs[DREG];
-   uint64_t valA, valB = 0;
-   uint64_t dstE, dstM, srcA, srcB = RNONE;
+   uint64_t valA = 0, valB = 0;
+   uint64_t dstE = RNONE, dstM = RNONE, srcA = RNONE, srcB = RNONE;
    RegisterFile * regInst = RegisterFile::getInstance();
 
    uint64_t dregIcode = dreg->geticode()->getOutput();
