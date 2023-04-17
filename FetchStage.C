@@ -161,17 +161,16 @@ bool FetchStage::needValC(uint64_t f_icode)
 
 uint64_t FetchStage::buildValC(uint64_t f_pc, uint64_t f_icode) {
     bool error = false;
-    uint64_t f_valC = 0;
+    uint64_t f_valC;
     f_pc++;
     if (getRegIds(f_pc)) {
         f_pc++;
     }
-
+    uint8_t byteArray[8];
     for (int j = 0; j < 8; j++) {
-        f_valC += Memory::getInstance()->getByte(f_pc++, error);
-        f_valC = f_valC << 8;
-
+        byteArray[j] = Memory::getInstance()->getByte(f_pc++, error);
     }
+    f_valC = Tools::buildLong(byteArray);
     return f_valC;
 }
 
