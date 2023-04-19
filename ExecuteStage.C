@@ -15,69 +15,25 @@
 #include "Instructions.h"
 
 
+uint64_t e_dstE;
+uint64_t e_valE;
+
 bool ExecuteStage::doClockLow(PipeReg ** pregs, Stage ** stages)
 {
     E * ereg = (E *) pregs[EREG];
     M * mreg = (M *) pregs[MREG];
     D * dreg = (D *) pregs[DREG];
 
-    uint64_t Cnd = 0, valE = 0;
+    uint64_t Cnd = 0;
     bool error = false;
     uint64_t eregIcode = ereg->geticode()->getOutput();
-<<<<<<< HEAD
-    uint64_t aluA;
-    uint64_t aluB;
-    uint64_t alufun;
-    bool cc_set;
-    uint64_t dstE;
-    uint64_t eregIfun = ereg->getifun()->getOutput();
-    uint64_t cnd = 0x000;
-    uint64_t OF;
-
-    if (eregIcode == IRRMOVQ || eregIcode == IOPQ) aluA = ereg->getvalA()->getOutput();
-    else if (eregIcode == IRRMOVQ || eregIcode == IRMMOVQ || 
-                eregIcode == IMRMOVQ) ereg->getvalC()->getOutput();
-    else if (eregIcode == ICALL || eregIcode == IPUSHQ) aluA = -8;
-    else if (eregIcode == IRET || eregIcode == IPOPQ) aluA = 8;
-    else aluA = 0;
-
-    if (eregIcode == IRMMOVQ || eregIcode == IMRMOVQ || eregIcode == IOPQ || eregIcode == ICALL ||
-            eregIcode == IPUSHQ || eregIcode == IRET || eregIcode == IPOPQ) {
-                aluB = ereg->getvalB()->getOutput();
-            }
-    else if (eregIcode == IRRMOVQ || eregIcode == IIRMOVQ) aluB = 0;
-    else aluB = 0; 
-
-    if (eregIcode == IOPQ) alufun = eregIfun;
-    else alufun = ADDQ;
-
-    if (eregIcode == IOPQ) cc_set = true;
-    else cc_set = false;
-
-    if (eregIcode == IRRMOVQ && true) cc_set = true;
-    else cc_set = false;
-
-    if (cc_set && eregIcode == 0x6) {
-        if (eregIfun == 0) {
-                OF = (sign(aluA) == sign(aluB)) && (sign(aluA+aluB) != sign(aluA));
-        }
-        else if (eregIfun == 1) {
-            OF = (sign(aluA) != sign(aluB)) && (sign(aluA-aluB) != sign(aluA));
-        }
-        else if (eregIfun == 2 || eregIfun == 3) {
-            OF = 0;
-        }
-    }
-
-    
-=======
     RegisterFile * regInst = RegisterFile::getInstance();
-    valE = ereg->getvalC()->getOutput();
+    e_valE = ereg->getvalC()->getOutput();
     uint64_t aluA = 0;
     uint64_t aluB = 0;
     uint64_t alufun = ADDQ;
     bool cc_set;
-    uint64_t dstE = ereg->getdstE()->getOutput();
+    e_dstE = ereg->getdstE()->getOutput();
     uint64_t eregIfun = ereg->getifun()->getOutput();
     uint64_t e_cnd = 0x000;
     uint64_t OF;
@@ -111,7 +67,7 @@ bool ExecuteStage::doClockLow(PipeReg ** pregs, Stage ** stages)
     else cc_set = false;
 
     //set dstE
-    if (eregIcode == IRRMOVQ && !e_cnd) dstE = RNONE;
+    if (eregIcode == IRRMOVQ && !e_cnd) e_dstE = RNONE;
 
     if (cc_set && eregIcode == 0x6) {
         if (eregIfun == 0) {
@@ -125,21 +81,14 @@ bool ExecuteStage::doClockLow(PipeReg ** pregs, Stage ** stages)
         }
     }
     
->>>>>>> 74b526abdc6491e4b213553562ac56fa00986d87
-
-
     setMInput(mreg, ereg->getstat()->getOutput(), eregIcode, ereg->getdstE()->getOutput(),
                 ereg->getdstM()->getOutput(), ereg->getvalA()->getOutput(),
-                Cnd, valE);
+                Cnd, e_valE);
 
 }
 
 //false == negative , true == positive
-<<<<<<< HEAD
-bool sign(uint64_t x) {
-=======
 bool ExecuteStage::sign(uint64_t x) {
->>>>>>> 74b526abdc6491e4b213553562ac56fa00986d87
         if (x >= 0) {
             return true;
         }
@@ -148,15 +97,15 @@ bool ExecuteStage::sign(uint64_t x) {
     }
 
 void ExecuteStage::setMInput(M * mreg, uint64_t stat, uint64_t icode,
-                            uint64_t dstE, uint64_t dstM, uint64_t valA, 
-                            uint64_t Cnd, uint64_t valE) 
+                            uint64_t e_dstE, uint64_t dstM, uint64_t valA, 
+                            uint64_t Cnd, uint64_t e_valE) 
 {
     mreg->getstat()->setInput(stat);
     mreg->geticode()->setInput(icode);
     mreg->getCnd()->setInput(Cnd);
-    mreg->getvalE()->setInput(valE);
+    mreg->getvalE()->setInput(e_valE);
     mreg->getvalA()->setInput(valA);
-    mreg->getdstE()->setInput(dstE);
+    mreg->getdstE()->setInput(e_dstE);
     mreg->getdstM()->setInput(dstM);
 }
 
@@ -173,5 +122,15 @@ void ExecuteStage::doClockHigh(PipeReg ** pregs)
     mreg->getvalA()->normal();
     mreg->getdstE()->normal();
     mreg->getdstM()->normal();
+}
+
+uint64_t ExecuteStage::gete_dstE()
+{
+    return e_dstE;
+}
+
+uint64_t ExecuteStage::gete_valE()
+{
+    return e_valE;
 }
 
