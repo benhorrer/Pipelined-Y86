@@ -19,6 +19,7 @@
 uint64_t e_dstE;
 uint64_t e_valE;
 
+
 bool ExecuteStage::doClockLow(PipeReg ** pregs, Stage ** stages)
 {
     E * ereg = (E *) pregs[EREG];
@@ -33,7 +34,7 @@ bool ExecuteStage::doClockLow(PipeReg ** pregs, Stage ** stages)
     uint64_t aluA = 0;
     uint64_t aluB = 0;
     uint64_t alufun = ADDQ;
-    bool cc_set;
+    bool cc_set = false;
     e_dstE = ereg->getdstE()->getOutput();
     uint64_t eregIfun = ereg->getifun()->getOutput();
     uint64_t e_cnd = 0x000;
@@ -42,32 +43,21 @@ bool ExecuteStage::doClockLow(PipeReg ** pregs, Stage ** stages)
 
     
     //setting AluA
-    if (eregIcode == IRRMOVQ || eregIcode == IOPQ) aluA = ereg->getvalA()->getOutput();
-    else if (eregIcode == IIRMOVQ || eregIcode == IRMMOVQ || 
-                eregIcode == IMRMOVQ) aluA = ereg->getvalC()->getOutput();
-    else if (eregIcode == ICALL || eregIcode == IPUSHQ) aluA = -8;
-    else if (eregIcode == IRET || eregIcode == IPOPQ) aluA = 8;
+    aluA = setaluA(eregIcode, ereg);
 
     //setting aluB
-    if (eregIcode == IRMMOVQ || eregIcode == IMRMOVQ || eregIcode == IOPQ || eregIcode == ICALL ||
-            eregIcode == IPUSHQ || eregIcode == IRET || eregIcode == IPOPQ) {
-                aluB = ereg->getvalB()->getOutput();
-            }
-    else if (eregIcode == IRRMOVQ || eregIcode == IIRMOVQ) aluB = 0;
-
+    aluB = setaluB(eregIcode, ereg);
 
     //setting alufun
-    if (eregIcode == IOPQ) alufun = eregIfun;
-    else alufun = ADDQ;
-
-    if (eregIcode == IOPQ) cc_set = true;
-    else cc_set = false;
+    alufun = setAluFun(eregIcode, eregIfun);
 
     //set cc
-    if (eregIcode == IRRMOVQ) cc_set = true;
-    else cc_set = false;
+    cc_set = setCC(eregIcode);
 
     //set dstE
+    e_dstE = setdstE(eregIcode, e_cnd);
+
+    /*
     if (eregIcode == IRRMOVQ && !e_cnd) e_dstE = RNONE;
 
     if (cc_set && eregIcode == 0x6) {
@@ -82,6 +72,7 @@ bool ExecuteStage::doClockLow(PipeReg ** pregs, Stage ** stages)
         }
         e_cnd = Tools::setBits(e_cnd, 2, 2);
     }
+    
 
     if (eregIcode == IOPQ) {
         uint64_t num;
@@ -89,11 +80,12 @@ bool ExecuteStage::doClockLow(PipeReg ** pregs, Stage ** stages)
             nume = valA + valB
         }
 
-        
+
     }
+    */
     
     setMInput(mreg, ereg->getstat()->getOutput(), eregIcode, e_dstE,
-                ereg->getdstM()->getOutput(), ereg->getvalA()->getOutput(),
+                aluB, aluA,
                 Cnd, e_valE);
 
 }
@@ -143,5 +135,86 @@ uint64_t ExecuteStage::gete_dstE()
 uint64_t ExecuteStage::gete_valE()
 {
     return e_valE;
+}
+
+uint64_t ExecuteStage::setaluA(uint64_t eregIcode, E * ereg) {
+    if (eregIcode == IRRMOVQ || eregIcode == IOPQ) return ereg->getvalA()->getOutput();
+    else if (eregIcode == IIRMOVQ || eregIcode == IRMMOVQ || 
+                eregIcode == IMRMOVQ) return ereg->getvalC()->getOutput();
+    else if (eregIcode == ICALL || eregIcode == IPUSHQ) return -8;
+    else if (eregIcode == IRET || eregIcode == IPOPQ) return 8;
+}
+
+uint64_t ExecuteStage::setaluB(uint64_t eregIcode, E * ereg){
+    if (eregIcode == IRMMOVQ || eregIcode == IMRMOVQ || eregIcode == IOPQ || eregIcode == ICALL ||
+            eregIcode == IPUSHQ || eregIcode == IRET || eregIcode == IPOPQ) {
+            return ereg->getvalB()->getOutput();
+            }
+    else if (eregIcode == IRRMOVQ || eregIcode == IIRMOVQ) return 0;
+}
+
+uint64_t ExecuteStage::setAluFun(uint64_t eregIcode, uint64_t eregIfun) {
+
+        if (eregIcode == IOPQ) return eregIfun;
+        return ADDQ;
+
+}
+
+bool ExecuteStage::setCC(uint64_t eregIcode)
+{
+    if (eregIcode == IOPQ || eregIcode == IRRMOVQ) return true;
+    else return false;
+}
+
+uint64_t ExecuteStage::setdstE(uint64_t eregIcode, uint64_t e_cnd) {
+    if (eregIcode == IRRMOVQ && !e_cnd) return RNONE;
+
+}
+
+uint64_t ExecuteStage::ALU(uint64_t eregIcode, uint64_t eregIfun, uint64_t * conditionCodes,
+                        uint64_t aluA, uint64_t aluB)
+{
+    uint64_t OF;
+    uint64_t total;
+    if (eregIfun == ADDQ) {
+        total = aluA + aluB;
+    }
+    else if (eregIfun == SUBQ) {
+        total = aluB - aluA;
+    }
+    else if (eregIfun == ANDQ) {
+        total = aluA & aluB;
+    }
+    else if (eregIfun == XORQ) {
+        total = aluA ^ aluB;
+    }
+    
+
+    
+}
+
+uint64_t ExecuteStage::set_cc(uint64_t eregIcode, uint64_t eregIfun, uint64_t total, uint64_t aluA, uint64_t aluB) {
+        uint64_t CC = 0;
+        uint64_t OF = 0;
+        uint64_t zero = 0;
+        uint64_t negative = 0;
+        if (setCC(eregIcode) && eregIcode == 0x6) {
+        if (eregIfun == 0) {
+                OF = (sign(aluA) == sign(aluB)) && (sign(aluA+aluB) != sign(aluA));
+        }
+        else if (eregIfun == 1) {
+            OF = (sign(aluA) != sign(aluB)) && (sign(aluA-aluB) != sign(aluA));
+        }
+        else if (eregIfun == 2 || eregIfun == 3) {
+            OF = 0;
+        }
+        CC = Tools::setBits(CC, 2, 2);
+    }
+    if (Tools::getBits(total, 64, 64) == 1) {
+        negative = 1;
+    }
+    if (total == 0) {
+        zero = 1;
+    }
 }
 
