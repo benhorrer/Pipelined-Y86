@@ -14,6 +14,7 @@
 #include "Debug.h"
 #include "Instructions.h"
 #include "Tools.h"
+#include "ConditionCodes.h"
 
 bool ExecuteStage::doClockLow(PipeReg ** pregs, Stage ** stages)
 {
@@ -23,6 +24,7 @@ bool ExecuteStage::doClockLow(PipeReg ** pregs, Stage ** stages)
 
     uint64_t Cnd = 0;
     bool error = false;
+    uint64_t e_cnd;
     uint64_t eregIcode = ereg->geticode()->getOutput();
     RegisterFile * regInst = RegisterFile::getInstance();
     e_valE = ereg->getvalC()->getOutput();
@@ -32,8 +34,6 @@ bool ExecuteStage::doClockLow(PipeReg ** pregs, Stage ** stages)
     bool cc_set = false;
     e_dstE = ereg->getdstE()->getOutput();
     uint64_t eregIfun = ereg->getifun()->getOutput();
-    uint64_t e_cnd = 0x000;
-    uint64_t OF;
     uint64_t d_valA = regInst->readRegister(dreg->getrA()->getOutput(), error);
 
     
@@ -51,6 +51,12 @@ bool ExecuteStage::doClockLow(PipeReg ** pregs, Stage ** stages)
 
     //set dstE
     e_dstE = setdstE(eregIcode, e_cnd, e_dstE);
+
+    if (eregIcode == IOPQ) {
+        uint64_t ALUSolution = ALU(eregIcode, eregIfun, aluA, aluB);
+        e_valE = ALUSolution;
+        e_cnd = set_cc(eregIcode, eregIfun, ALUSolution, aluA, aluB);
+    }
 
     /*
     if (eregIcode == IRRMOVQ && !e_cnd) e_dstE = RNONE;
@@ -167,10 +173,9 @@ uint64_t ExecuteStage::setdstE(uint64_t eregIcode, uint64_t e_cnd, uint64_t e_ds
 
 }
 
-uint64_t ExecuteStage::ALU(uint64_t eregIcode, uint64_t eregIfun, uint64_t * conditionCodes,
+uint64_t ExecuteStage::ALU(uint64_t eregIcode, uint64_t eregIfun,
                         uint64_t aluA, uint64_t aluB)
 {
-    uint64_t OF;
     uint64_t total;
     if (eregIfun == ADDQ) {
         total = aluA + aluB;
@@ -184,33 +189,47 @@ uint64_t ExecuteStage::ALU(uint64_t eregIcode, uint64_t eregIfun, uint64_t * con
     else if (eregIfun == XORQ) {
         total = aluA ^ aluB;
     }
-    
+    return total;
 
     
 }
 
 uint64_t ExecuteStage::set_cc(uint64_t eregIcode, uint64_t eregIfun, uint64_t total, uint64_t aluA, uint64_t aluB) {
         uint64_t CC = 0;
-        uint64_t OF = 0;
-        uint64_t zero = 0;
-        uint64_t negative = 0;
-        if (setCC(eregIcode) && eregIcode == 0x6) {
-        if (eregIfun == 0) {
-                OF = (sign(aluA) == sign(aluB)) && (sign(aluA+aluB) != sign(aluA));
-        }
-        else if (eregIfun == 1) {
-            OF = (sign(aluA) != sign(aluB)) && (sign(aluA-aluB) != sign(aluA));
-        }
-        else if (eregIfun == 2 || eregIfun == 3) {
-            OF = 0;
-        }
-        CC = Tools::setBits(CC, 2, 2);
-    }
-    if (Tools::getBits(total, 64, 64) == 1) {
-        negative = 1;
-    }
-    if (total == 0) {
-        zero = 1;
-    }
+        bool error = false;
+        uint64_t overflow = 0;
+        ConditionCodes * codes = ConditionCodes::getInstance(); 
+        //uint64_t zero = 0;
+        //uint64_t negative = 0;
+        //if (setCC(eregIcode) && eregIcode == 0x6) {
+            if (eregIfun == 0) {
+                overflow = (sign(aluA) == sign(aluB)) && (sign(aluA+aluB) != sign(aluA));
+            }      
+            else if (eregIfun == 1) {
+                overflow = (sign(aluA) != sign(aluB)) && (sign(aluA-aluB) != sign(aluA));
+            }
+            else if (eregIfun == 2 || eregIfun == 3) {
+                overflow = 0;
+            }
+            if (overflow == 1) {
+                codes->setConditionCode(true, OF, error);
+            }
+            else {
+                codes->setConditionCode(false, OF, error);
+            }
+            if (Tools::getBits(total, 63, 63) == 1) {
+                codes->setConditionCode(true, SF, error);
+            }
+            else {
+                codes->setConditionCode(false, SF, error);
+            }
+            if (total == 0) {
+                codes->setConditionCode(true, ZF, error);
+            }
+            else {
+                codes->setConditionCode(false, ZF, error);
+            }
+        //}
+        return CC;
 }
 
