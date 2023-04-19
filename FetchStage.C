@@ -13,6 +13,7 @@
 #include "Debug.h"
 #include "Instructions.h"
 #include "Memory.h"
+#include "Tools.h"
 
 
 /*
@@ -46,6 +47,27 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
    {
        icode = inst >> 4;
        ifun = 0xf & inst; 
+   }
+   if (needRegIds(icode))
+   {
+       uint64_t registerByte = getRegIds(f_pc);
+       if (icode == IRRMOVQ  || icode == IRMMOVQ || icode == IMRMOVQ || icode == IOPQ) {
+            rA = (registerByte & 0b11110000) >> 4;
+            rB = registerByte & 0b1111;
+       }
+
+       else if (icode == IPUSHQ || icode == IPOPQ) {
+            rA = (registerByte & 0b11110000) >> 4;
+            rB = 0xf;
+       }
+
+       else {
+            rA = 0xf;
+            rB = registerByte & 0b1111;
+       }
+   }
+   if (needValC(icode)) {
+        valC = buildValC(f_pc, icode);
    }
    //The value passed to setInput below will need to be changed
    valP = PCIncrement(f_pc, needRegIds(icode), needValC(icode));
@@ -121,6 +143,12 @@ bool FetchStage::needRegIds(uint64_t f_icode)
     return false;
 }
 
+uint64_t FetchStage::getRegIds(uint64_t f_pc)
+{  bool error = false;
+   uint64_t ids = Memory::getInstance()->getByte(f_pc + 1, error);
+   return ids; 
+}
+
 bool FetchStage::needValC(uint64_t f_icode)
 {
     if (f_icode == IIRMOVQ || f_icode == IRMMOVQ || f_icode == IMRMOVQ ||
@@ -129,6 +157,21 @@ bool FetchStage::needValC(uint64_t f_icode)
         return true;
     }
     return false;
+}
+
+uint64_t FetchStage::buildValC(uint64_t f_pc, uint64_t f_icode) {
+    bool error = false;
+    uint64_t f_valC;
+    f_pc++;
+    if (getRegIds(f_pc)) {
+        f_pc++;
+    }
+    uint8_t byteArray[8];
+    for (int j = 0; j < 8; j++) {
+        byteArray[j] = Memory::getInstance()->getByte(f_pc++, error);
+    }
+    f_valC = Tools::buildLong(byteArray);
+    return f_valC;
 }
 
 uint64_t FetchStage::PCIncrement(uint64_t f_pc, bool f_needRegIds, bool f_needValC)

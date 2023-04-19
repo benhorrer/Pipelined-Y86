@@ -23,6 +23,10 @@ bool WritebackStage::doClockLow(PipeReg ** pregs, Stage ** stages)
 
 void WritebackStage::doClockHigh(PipeReg ** pregs)
 {
+    W * wreg = (W *) pregs[WREG];
+    RegisterFile * regInst = RegisterFile::getInstance();
 
+    bool error = false;
+    regInst->writeRegister(wreg->getvalE()->getOutput(), wreg->getdstE()->getOutput(), error);
 }
 
