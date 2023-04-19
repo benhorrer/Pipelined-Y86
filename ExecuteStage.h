@@ -12,7 +12,7 @@ class ExecuteStage: public Stage
       uint64_t setaluB(uint64_t eregIcode, E * ereg);
       uint64_t setAluFun(uint64_t eregIcode, uint64_t eregIfun);
       bool setCC(uint64_t eregIcode);
-      uint64_t setdstE(uint64_t eregIcode, uint64_t e_cnd);
+      uint64_t setdstE(uint64_t eregIcode, uint64_t e_cnd, uint64_t e_dstE);
       uint64_t ALU(uint64_t eregIcode, uint64_t eregIfun, uint64_t * conditionCodes,
                         uint64_t aluA, uint64_t aluB);
       uint64_t set_cc(uint64_t eregIcode, uint64_t eregIfun, uint64_t total, uint64_t aluA, uint64_t aluB);

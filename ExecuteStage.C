@@ -15,11 +15,6 @@
 #include "Instructions.h"
 #include "Tools.h"
 
-
-uint64_t e_dstE;
-uint64_t e_valE;
-
-
 bool ExecuteStage::doClockLow(PipeReg ** pregs, Stage ** stages)
 {
     E * ereg = (E *) pregs[EREG];
@@ -55,7 +50,7 @@ bool ExecuteStage::doClockLow(PipeReg ** pregs, Stage ** stages)
     cc_set = setCC(eregIcode);
 
     //set dstE
-    e_dstE = setdstE(eregIcode, e_cnd);
+    e_dstE = setdstE(eregIcode, e_cnd, e_dstE);
 
     /*
     if (eregIcode == IRRMOVQ && !e_cnd) e_dstE = RNONE;
@@ -85,7 +80,7 @@ bool ExecuteStage::doClockLow(PipeReg ** pregs, Stage ** stages)
     */
     
     setMInput(mreg, ereg->getstat()->getOutput(), eregIcode, e_dstE,
-                aluB, aluA,
+                ereg->getdstM()->getOutput(), ereg->getvalA()->getOutput(),
                 Cnd, e_valE);
 
 }
@@ -166,8 +161,9 @@ bool ExecuteStage::setCC(uint64_t eregIcode)
     else return false;
 }
 
-uint64_t ExecuteStage::setdstE(uint64_t eregIcode, uint64_t e_cnd) {
+uint64_t ExecuteStage::setdstE(uint64_t eregIcode, uint64_t e_cnd, uint64_t e_dstE) {
     if (eregIcode == IRRMOVQ && !e_cnd) return RNONE;
+    else return e_dstE;
 
 }
 
