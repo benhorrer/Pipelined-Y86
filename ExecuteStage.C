@@ -13,6 +13,7 @@
 #include "Status.h"
 #include "Debug.h"
 #include "Instructions.h"
+#include "Tools.h"
 
 
 uint64_t e_dstE;
@@ -79,9 +80,19 @@ bool ExecuteStage::doClockLow(PipeReg ** pregs, Stage ** stages)
         else if (eregIfun == 2 || eregIfun == 3) {
             OF = 0;
         }
+        e_cnd = Tools::setBits(e_cnd, 2, 2);
+    }
+
+    if (eregIcode == IOPQ) {
+        uint64_t num;
+        if (eregIfun == ) {
+            nume = valA + valB
+        }
+
+        
     }
     
-    setMInput(mreg, ereg->getstat()->getOutput(), eregIcode, ereg->getdstE()->getOutput(),
+    setMInput(mreg, ereg->getstat()->getOutput(), eregIcode, e_dstE,
                 ereg->getdstM()->getOutput(), ereg->getvalA()->getOutput(),
                 Cnd, e_valE);
 
