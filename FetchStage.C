@@ -163,7 +163,7 @@ uint64_t FetchStage::buildValC(uint64_t f_pc, uint64_t f_icode) {
     bool error = false;
     uint64_t f_valC;
     f_pc++;
-    if (getRegIds(f_pc)) {
+    if (needRegIds(f_icode)) {
         f_pc++;
     }
     uint8_t byteArray[8];
