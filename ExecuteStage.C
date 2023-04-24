@@ -211,3 +211,29 @@ uint64_t ExecuteStage::set_cc(uint64_t eregIcode, uint64_t eregIfun, uint64_t to
         return CC;
 }
 
+
+uint64_t ExecuteStage::takeCondition(uint64_t e_icode, uint64_t e_ifun) {
+    bool error = false;
+    ConditionCodes * codes = ConditionCodes::getInstance(); 
+    uint64_t overflow = codes->getConditionCode(OF, error);
+    uint64_t zero = codes->getConditionCode(ZF, error);
+    uint64_t sign = codes->getConditionCode(SF, error);
+
+
+    if (e_icode != IJXX || e_icode != ICMOVXX) return 0;
+
+    if (e_ifun == UNCOND) return 1;
+
+    else if (e_ifun == LESSEQ) return (sign ^ overflow) | zero;
+
+    else if (e_ifun == LESS) return sign ^ overflow;
+
+    else if (e_ifun == EQUAL) return zero;
+
+    else if (e_ifun == NOTEQUAL) return !zero;
+
+    else if (e_ifun == GREATEREQ) return !(sign ^ overflow);
+
+    else if (e_ifun == GREATER) return !(sign ^ overflow) & !zero;
+    
+}

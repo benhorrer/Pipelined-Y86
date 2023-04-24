@@ -16,6 +16,7 @@ class ExecuteStage: public Stage
       uint64_t ALU(uint64_t eregIcode, uint64_t eregIfun,
                         uint64_t aluA, uint64_t aluB);
       uint64_t set_cc(uint64_t eregIcode, uint64_t eregIfun, uint64_t total, uint64_t aluA, uint64_t aluB);
+      uint64_t takeCondition(uint64_t e_icode, uint64_t e_ifun);
 
    public:
       bool doClockLow(PipeReg ** pregs, Stage ** stages);
