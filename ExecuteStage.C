@@ -52,53 +52,19 @@ bool ExecuteStage::doClockLow(PipeReg ** pregs, Stage ** stages)
     //set dstE
     e_dstE = setdstE(eregIcode, e_cnd, e_dstE);
 
-    if (eregIcode == IOPQ) {
+    if (cc_set) {
         uint64_t ALUSolution = ALU(eregIcode, eregIfun, aluA, aluB);
         e_valE = ALUSolution;
         e_cnd = set_cc(eregIcode, eregIfun, ALUSolution, aluA, aluB);
     }
-
-    /*
-    if (eregIcode == IRRMOVQ && !e_cnd) e_dstE = RNONE;
-
-    if (cc_set && eregIcode == 0x6) {
-        if (eregIfun == 0) {
-                OF = (sign(aluA) == sign(aluB)) && (sign(aluA+aluB) != sign(aluA));
-        }
-        else if (eregIfun == 1) {
-            OF = (sign(aluA) != sign(aluB)) && (sign(aluA-aluB) != sign(aluA));
-        }
-        else if (eregIfun == 2 || eregIfun == 3) {
-            OF = 0;
-        }
-        e_cnd = Tools::setBits(e_cnd, 2, 2);
-    }
-    
-
-    if (eregIcode == IOPQ) {
-        uint64_t num;
-        if (eregIfun == ) {
-            nume = valA + valB
-        }
-
-
-    }
-    */
     
     setMInput(mreg, ereg->getstat()->getOutput(), eregIcode, e_dstE,
                 ereg->getdstM()->getOutput(), ereg->getvalA()->getOutput(),
-                Cnd, e_valE);
+                e_cnd, e_valE);
 
 }
 
-//false == negative , true == positive
-bool ExecuteStage::sign(uint64_t x) {
-        if (x >= 0) {
-            return true;
-        }
 
-        else if (x < 0) return false;
-    }
 
 void ExecuteStage::setMInput(M * mreg, uint64_t stat, uint64_t icode,
                             uint64_t e_dstE, uint64_t dstM, uint64_t valA, 
@@ -194,6 +160,12 @@ uint64_t ExecuteStage::ALU(uint64_t eregIcode, uint64_t eregIfun,
     
 }
 
+//0 == negative , 1 == positive
+uint64_t ExecuteStage::sign(uint64_t x) {
+        uint64_t sign = x >> 63;
+        return sign;
+    }
+
 uint64_t ExecuteStage::set_cc(uint64_t eregIcode, uint64_t eregIfun, uint64_t total, uint64_t aluA, uint64_t aluB) {
         uint64_t CC = 0;
         bool error = false;
@@ -202,21 +174,27 @@ uint64_t ExecuteStage::set_cc(uint64_t eregIcode, uint64_t eregIfun, uint64_t to
         //uint64_t zero = 0;
         //uint64_t negative = 0;
         //if (setCC(eregIcode) && eregIcode == 0x6) {
-            if (eregIfun == 0) {
-                overflow = (sign(aluA) == sign(aluB)) && (sign(aluA+aluB) != sign(aluA));
-            }      
-            else if (eregIfun == 1) {
-                overflow = (sign(aluA) != sign(aluB)) && (sign(aluA-aluB) != sign(aluA));
-            }
-            else if (eregIfun == 2 || eregIfun == 3) {
-                overflow = 0;
-            }
-            if (overflow == 1) {
-                codes->setConditionCode(true, OF, error);
+            if (eregIcode == IOPQ) {
+                if (eregIfun == ADDQ) {
+                    overflow = (sign(aluA) == sign(aluB)) && (sign(total) != sign(aluA));
+                    //codes->setConditionCode(overflow, OF, error);
+                }      
+                else if (eregIfun == SUBQ) {
+                    overflow = (sign(aluA) != sign(aluB)) && (sign(total) != sign(aluB));
+                    //codes->setConditionCode(overflow, OF, error);
+
+                }
             }
             else {
-                codes->setConditionCode(false, OF, error);
+                overflow = 0;
             }
+            codes->setConditionCode(overflow, OF, error);
+            //if (overflow == 1) {
+            //    codes->setConditionCode(true, OF, error);
+            //}
+            //else {
+            //    codes->setConditionCode(false, OF, error);
+            //}
             if (Tools::getBits(total, 63, 63) == 1) {
                 codes->setConditionCode(true, SF, error);
             }
