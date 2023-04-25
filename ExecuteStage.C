@@ -53,7 +53,6 @@ bool ExecuteStage::doClockLow(PipeReg ** pregs, Stage ** stages)
     e_cnd = takeCondition(eregIcode, eregIfun);
     e_dstE = setdstE(eregIcode, e_cnd, e_dstE);
 
-
     e_valE = ALU(eregIcode, eregIfun, aluA, aluB);
 
     if (cc_set) {
@@ -201,7 +200,7 @@ uint64_t ExecuteStage::ALU(uint64_t eregIcode, uint64_t eregIfun,
 uint64_t ExecuteStage::sign(uint64_t x) {
         uint64_t sign = x >> 63;
         return sign;
-    }
+}
 
 uint64_t ExecuteStage::set_cc(uint64_t eregIcode, uint64_t eregIfun, uint64_t total, uint64_t aluA, uint64_t aluB) {
         uint64_t CC = 0;
