@@ -29,61 +29,18 @@ bool DecodeStage::doClockLow(PipeReg ** pregs, Stage ** stages)
 
    uint64_t dregIcode = dreg->geticode()->getOutput();
    // set srcA
-   if (dregIcode == IRRMOVQ || dregIcode == IRMMOVQ ||
-       dregIcode == IOPQ || dregIcode == IPUSHQ)
-   {
-       srcA = dreg->getrA()->getOutput();
-   }
-   else if (dregIcode == IPOPQ || dregIcode == IRET)
-   {
-       srcA = 4;
-   }
-   // set srcB
-   if (dregIcode == IOPQ || dregIcode == IRMMOVQ ||
-       dregIcode == IMRMOVQ)
-   {
-       srcB = dreg->getrB()->getOutput();
-   }
-   else if (dregIcode == IPUSHQ || dregIcode == IPOPQ || 
-            dregIcode == ICALL || dregIcode == IRET)
-   {
-       srcB = 4;
-   }
+   srcA = setsrcA(dregIcode, dreg);
+    //set srcB
+    srcB = setsrcB(dregIcode, dreg);
    // set dstE
-   if (dregIcode == IRRMOVQ || dregIcode == IIRMOVQ ||
-       dregIcode == IOPQ)
-   {
-       dstE = dreg->getrB()->getOutput();
-   } 
-   else if (dregIcode == IPUSHQ || dregIcode == IPOPQ || 
-            dregIcode == ICALL || dregIcode == IRET)
-   {
-       dstE = 4;
-   }
+    dstE = setdstE(dregIcode, dreg);
    // set dstM
-   if (dregIcode == IMRMOVQ || dregIcode == IPOPQ)
-   {
-       dstM = dreg->getrA()->getOutput();
-   }
+   dstM = setdstM(dregIcode, dreg);
    // Sel + FwdA 
-    if (srcA == RNONE) valA = 0;
-    else if (srcA == eStage->gete_dstE()) valA = eStage->gete_valE();
-    else if (srcA == mreg->getdstE()->getOutput()) valA = mreg->getvalE()->getOutput();
-    else if (srcA == wreg->getdstE()->getOutput()) valA = wreg->getvalE()->getOutput();
-    else {
-        bool selError = false;
-        valA = regInst->readRegister(dreg->getrA()->getOutput(), selError);
-    }
-
+   valA = selFwdA(srcA, eStage->gete_dstE(), eStage->gete_valE(), mreg, wreg, dreg);
    //FwdB
-    if (srcB == RNONE) valB = 0;
-    else if (srcB == eStage->gete_dstE()) valB = eStage->gete_valE();
-    else if (srcB == mreg->getdstE()->getOutput()) valB = mreg->getvalE()->getOutput();
-    else if (srcB == wreg->getdstE()->getOutput()) valB = wreg->getvalE()->getOutput();
-    else {
-        bool selError = false;
-        valB = regInst->readRegister(dreg->getrB()->getOutput(), selError);
-    }
+   valB = FwdB(srcB, eStage->gete_dstE(), eStage->gete_valE(), mreg, wreg, dreg);
+   
 
    setEInput(ereg, dreg->getstat()->getOutput(), dregIcode,
                dreg->getifun()->getOutput(), dreg->getvalC()->getOutput(),
@@ -124,5 +81,87 @@ void DecodeStage::doClockHigh(PipeReg ** pregs)
    ereg->getdstM()->normal();
    ereg->getsrcA()->normal();
    ereg->getsrcB()->normal();
+}
+
+uint64_t DecodeStage::setsrcA(uint64_t dregIcode, D * dreg) {
+    switch (dregIcode) {
+        case IRRMOVQ:
+        case IRMMOVQ:
+        case IOPQ:
+        case IPUSHQ:
+            return dreg->getrA()->getOutput();
+        case IPOPQ:
+        case IRET:
+            return 4;
+        default:
+            return RNONE;
+    }
+}
+
+uint64_t DecodeStage::setsrcB(uint64_t dregIcode, D * dreg) {
+    switch (dregIcode) {
+        case IOPQ:
+        case IRMMOVQ:
+        case IMRMOVQ:
+            return dreg->getrB()->getOutput();
+        case IPUSHQ:
+        case IPOPQ:
+        case ICALL:
+        case IRET:
+            return 4;
+        default:
+            return RNONE;
+        
+    }
+}
+
+uint64_t DecodeStage::setdstE(uint64_t dregIcode, D * dreg) {
+    switch (dregIcode) {
+        case IRRMOVQ:
+        case IIRMOVQ:
+        case IOPQ:
+            return dreg->getrB()->getOutput();
+        case IPUSHQ:
+        case IPOPQ:
+        case ICALL:
+        case IRET:
+            return 4;
+        default:
+            return RNONE;
+    }
+}
+
+uint64_t DecodeStage::setdstM(uint64_t dregIcode, D * dreg) {
+    switch (dregIcode) {
+        case IMRMOVQ:
+        case IPOPQ:
+            return dreg->getrA()->getOutput();;
+        default:
+            return RNONE;
+    }
+}
+
+uint64_t DecodeStage::selFwdA(uint64_t srcA, uint64_t e_dstE, uint64_t e_valE, M * mreg, W * wreg, D * dreg) {
+    RegisterFile * regInst = RegisterFile::getInstance();
+    if (srcA == RNONE) return 0;
+    else if (srcA == e_dstE) return e_valE;
+    else if (srcA == mreg->getdstE()->getOutput()) return mreg->getvalE()->getOutput();
+    else if (srcA == wreg->getdstE()->getOutput()) return wreg->getvalE()->getOutput();
+    else {
+        bool selError = false;
+        return regInst->readRegister(dreg->getrA()->getOutput(), selError);
+    }
+}
+
+uint64_t DecodeStage::FwdB(uint64_t srcB, uint64_t e_dstE, uint64_t e_valE, M * mreg, W * wreg, D * dreg) {
+    RegisterFile * regInst = RegisterFile::getInstance();
+    if (srcB == RNONE) return 0;
+    else if (srcB == e_dstE) return e_valE;
+    else if (srcB == mreg->getdstE()->getOutput()) return mreg->getvalE()->getOutput();
+    else if (srcB == wreg->getdstE()->getOutput()) return wreg->getvalE()->getOutput();
+    else {
+        bool selError = false;
+        return regInst->readRegister(dreg->getrB()->getOutput(), selError);
+    }
 }
 

@@ -152,12 +152,26 @@ uint64_t ExecuteStage::setaluA(uint64_t eregIcode, E * ereg) {
 }
 */
 uint64_t ExecuteStage::setaluB(uint64_t eregIcode, E * ereg){
+    switch (eregIcode) {
+        case IRMMOVQ:
+        case IMRMOVQ:
+        case IOPQ:
+        case IPUSHQ:
+        case IRET:
+        case IPOPQ:
+            return ereg->getvalB()->getOutput();
+        default:
+            return 0;
+        
+    }
+    /*
     if (eregIcode == IRMMOVQ || eregIcode == IMRMOVQ || eregIcode == IOPQ || eregIcode == ICALL ||
             eregIcode == IPUSHQ || eregIcode == IRET || eregIcode == IPOPQ) {
             return ereg->getvalB()->getOutput();
             }
     else if (eregIcode == IRRMOVQ || eregIcode == IIRMOVQ) return 0;
     else return 0;
+    */
 }
 
 uint64_t ExecuteStage::setAluFun(uint64_t eregIcode, uint64_t eregIfun) {
@@ -182,6 +196,17 @@ uint64_t ExecuteStage::setdstE(uint64_t eregIcode, uint64_t e_cnd, uint64_t e_ds
 uint64_t ExecuteStage::ALU(uint64_t eregIcode, uint64_t eregIfun,
                         uint64_t aluA, uint64_t aluB)
 {
+    switch (eregIfun) {
+        case SUBQ:
+            return aluB - aluA;
+        case ANDQ:
+            return aluA & aluB;
+        case XORQ:
+            return aluA ^ aluB;
+        default:
+            return aluA + aluB;
+    }
+    /*
     if (eregIfun == SUBQ) {
         return aluB - aluA;
     }
@@ -192,7 +217,7 @@ uint64_t ExecuteStage::ALU(uint64_t eregIcode, uint64_t eregIfun,
         return aluA ^ aluB;
     }
     return aluA + aluB;
-
+    */
     
 }
 
@@ -225,12 +250,6 @@ uint64_t ExecuteStage::set_cc(uint64_t eregIcode, uint64_t eregIfun, uint64_t to
                 overflow = 0;
             }
             codes->setConditionCode(overflow, OF, error);
-            //if (overflow == 1) {
-            //    codes->setConditionCode(true, OF, error);
-            //}
-            //else {
-            //    codes->setConditionCode(false, OF, error);
-            //}
             if (Tools::getBits(total, 63, 63) == 1) {
                 codes->setConditionCode(true, SF, error);
             }
