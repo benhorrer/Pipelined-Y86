@@ -93,13 +93,25 @@ uint64_t MemoryStage::memAddr(uint64_t m_icode, M * _mreg) {
 }
 
 bool MemoryStage::mem_read(uint64_t m_icode) {
-    if (m_icode == IMRMOVQ || m_icode == IPOPQ || m_icode == IRET) return true;
-    return false;
+    switch (m_icode) {
+        case IMRMOVQ:
+        case IPOPQ:
+        case IRET:
+            return true;
+        default:
+            return false;
+    }
 }
 
 bool MemoryStage::mem_write(uint64_t m_icode) {
-    if (m_icode == IRMMOVQ || m_icode == IPUSHQ || m_icode == ICALL) return true;
-    return false;
+    switch (m_icode) {
+        case IRMMOVQ:
+        case IPUSHQ:
+        case ICALL:
+            return true;
+        default:
+            return false;
+    }
 }
 
 uint64_t MemoryStage::getm_valM() {
