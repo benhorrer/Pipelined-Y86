@@ -64,6 +64,11 @@ bool ExecuteStage::doClockLow(PipeReg ** pregs, Stage ** stages)
     if (eregIcode == ICMOVXX) {
         e_valE = ereg->getvalA()->getOutput();
     }
+
+    if (eregIcode == IMRMOVQ) {
+        e_valE = ereg->getvalB()->getOutput() + ereg->getvalC()->getOutput();
+    }
+
     setMInput(mreg, ereg->getstat()->getOutput(), eregIcode, e_dstE,
                 ereg->getdstM()->getOutput(), ereg->getvalA()->getOutput(),
                 e_cnd, e_valE);

@@ -15,8 +15,11 @@
 
 bool WritebackStage::doClockLow(PipeReg ** pregs, Stage ** stages)
 {
+    bool error = false;
     W * wreg = (W *) pregs[WREG];
+    RegisterFile * regInst = RegisterFile::getInstance();
     uint64_t icode = wreg->geticode()->getOutput();
+    regInst->writeRegister(wreg->getvalM()->getOutput(), wreg->getdstM()->getOutput(), error);
     if (icode == 0x00) return true; 
     return false;
 }
