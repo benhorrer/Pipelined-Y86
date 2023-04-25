@@ -50,6 +50,7 @@ bool ExecuteStage::doClockLow(PipeReg ** pregs, Stage ** stages)
     cc_set = setCC(eregIcode);
 
     //set dstE
+    e_cnd = takeCondition(eregIcode, eregIfun);
     e_dstE = setdstE(eregIcode, e_cnd, e_dstE);
 
     if (cc_set) {
@@ -58,6 +59,11 @@ bool ExecuteStage::doClockLow(PipeReg ** pregs, Stage ** stages)
         e_cnd = set_cc(eregIcode, eregIfun, ALUSolution, aluA, aluB);
     }
     
+
+    //set e_cnd
+    if (eregIcode == ICMOVXX) {
+        e_valE = ereg->getvalA()->getOutput();
+    }
     setMInput(mreg, ereg->getstat()->getOutput(), eregIcode, e_dstE,
                 ereg->getdstM()->getOutput(), ereg->getvalA()->getOutput(),
                 e_cnd, e_valE);
@@ -129,7 +135,7 @@ uint64_t ExecuteStage::setAluFun(uint64_t eregIcode, uint64_t eregIfun) {
 
 bool ExecuteStage::setCC(uint64_t eregIcode)
 {
-    if (eregIcode == IOPQ || eregIcode == IRRMOVQ) return true;
+    if (eregIcode == IOPQ) return true;
     else return false;
 }
 
@@ -220,7 +226,7 @@ uint64_t ExecuteStage::takeCondition(uint64_t e_icode, uint64_t e_ifun) {
     uint64_t sign = codes->getConditionCode(SF, error);
 
 
-    if (e_icode != IJXX || e_icode != ICMOVXX) return 0;
+    if (e_icode == IJXX || e_icode == ICMOVXX){// return 0;
 
     if (e_ifun == UNCOND) return 1;
 
@@ -235,5 +241,6 @@ uint64_t ExecuteStage::takeCondition(uint64_t e_icode, uint64_t e_ifun) {
     else if (e_ifun == GREATEREQ) return !(sign ^ overflow);
 
     else if (e_ifun == GREATER) return !(sign ^ overflow) & !zero;
-    
+    }
+    else return 0;
 }

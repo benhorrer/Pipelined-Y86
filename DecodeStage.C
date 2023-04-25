@@ -66,7 +66,8 @@ bool DecodeStage::doClockLow(PipeReg ** pregs, Stage ** stages)
        dstM = dreg->getrA()->getOutput();
    }
    // Sel + FwdA 
-    if (srcA == eStage->gete_dstE()) valA = eStage->gete_valE();
+    if (srcA == RNONE) valA = 0;
+    else if (srcA == eStage->gete_dstE()) valA = eStage->gete_valE();
     else if (srcA == mreg->getdstE()->getOutput()) valA = mreg->getvalE()->getOutput();
     else if (srcA == wreg->getdstE()->getOutput()) valA = wreg->getvalE()->getOutput();
     else {
@@ -75,7 +76,8 @@ bool DecodeStage::doClockLow(PipeReg ** pregs, Stage ** stages)
     }
 
    //FwdB
-     if (srcB == eStage->gete_dstE()) valB = eStage->gete_valE();
+    if (srcB == RNONE) valB = 0;
+    else if (srcB == eStage->gete_dstE()) valB = eStage->gete_valE();
     else if (srcB == mreg->getdstE()->getOutput()) valB = mreg->getvalE()->getOutput();
     else if (srcB == wreg->getdstE()->getOutput()) valB = wreg->getvalE()->getOutput();
     else {
