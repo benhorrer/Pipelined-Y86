@@ -38,15 +38,12 @@ bool MemoryStage::doClockLow(PipeReg ** pregs, Stage ** stages)
     dstM = mreg->getdstM()->getOutput();
     addr = memAddr(icode, mreg);
 
-    /*if(icode == IPUSHQ) {
-        valE = regInst->readRegister(RSP, error) - 8;
-    }*/
 
     if (mem_read(icode)) {
         valM = mem->getLong(addr, error);
     }
 
-    if (mem_write(icode)) {
+    else if (mem_write(icode)) {
         mem->putLong(mreg->getvalA()->getOutput(), addr, error);
     }
 
@@ -83,13 +80,18 @@ void MemoryStage::setWInput(W * wreg, uint64_t stat, uint64_t icode, uint64_t va
 
 uint64_t MemoryStage::memAddr(uint64_t m_icode, M * _mreg) {
 
-    if (m_icode == IRMMOVQ || m_icode == IPUSHQ || m_icode == ICALL || m_icode == IMRMOVQ) {
-        return _mreg->getvalE()->getOutput();
+    switch (m_icode) {
+        case IRMMOVQ:
+        case IPUSHQ:
+        case ICALL:
+        case IMRMOVQ:
+            return _mreg->getvalE()->getOutput();
+        case IPOPQ:
+        case IRET:
+            return _mreg->getvalA()->getOutput();
+        default:
+            return 0;
     }
-    else if (m_icode == IPOPQ || m_icode == IRET) {
-        return _mreg->getvalA()->getOutput();
-    }
-    return 0;
 }
 
 bool MemoryStage::mem_read(uint64_t m_icode) {
