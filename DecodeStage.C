@@ -23,7 +23,7 @@ bool DecodeStage::doClockLow(PipeReg ** pregs, Stage ** stages)
    M * mreg = (M *) pregs[MREG];
    W * wreg = (W *) pregs[WREG];
    uint64_t valA = 0, valB = 0;
-   uint64_t dstE = RNONE, dstM = RNONE, srcA = RNONE, srcB = RNONE;
+   uint64_t dstE = RNONE, dstM = RNONE;
    RegisterFile * regInst = RegisterFile::getInstance();
    ExecuteStage * eStage = (ExecuteStage *) stages[ESTAGE];
    MemoryStage * mStage = (MemoryStage *) stages[MSTAGE];
@@ -32,25 +32,25 @@ bool DecodeStage::doClockLow(PipeReg ** pregs, Stage ** stages)
 
    uint64_t dregIcode = dreg->geticode()->getOutput();
    // set srcA
-   srcA = setsrcA(dregIcode, dreg);
-    //set srcB
-    srcB = setsrcB(dregIcode, dreg);
+   d_srcA = setsrcA(dregIcode, dreg);
+   //set srcB
+   d_srcB = setsrcB(dregIcode, dreg);
    // set dstE
-    dstE = setdstE(dregIcode, dreg);
+   dstE = setdstE(dregIcode, dreg);
    // set dstM
    dstM = setdstM(dregIcode, dreg);
    // Sel + FwdA 
 
-   valA = selFwdA(srcA, eStage->gete_dstE(), eStage->gete_valE(),
+   valA = selFwdA(d_srcA, eStage->gete_dstE(), eStage->gete_valE(),
              mreg, wreg, dreg, mStage);
    //FwdB
-   valB = FwdB(srcB, eStage->gete_dstE(), eStage->gete_valE(),
+   valB = FwdB(d_srcB, eStage->gete_dstE(), eStage->gete_valE(),
              mreg, wreg, dreg, mStage);
    
 
    setEInput(ereg, dreg->getstat()->getOutput(), dregIcode,
                dreg->getifun()->getOutput(), dreg->getvalC()->getOutput(),
-               valA, valB, dstE, dstM, srcA, srcB);
+               valA, valB, dstE, dstM, d_srcA, d_srcB);
     
 
 }
@@ -177,5 +177,13 @@ uint64_t DecodeStage::FwdB(uint64_t srcB, uint64_t e_dstE, uint64_t e_valE,
         bool selError = false;
         return regInst->readRegister(srcB, selError);
     }
+}
+
+uint64_t DecodeStage::getd_srcA() {
+    return d_srcA;
+}
+
+uint64_t DecodeStage::getd_srcB() {
+    return d_srcB;
 }
 
