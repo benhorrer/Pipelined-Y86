@@ -109,6 +109,7 @@ void ExecuteStage::doClockHigh(PipeReg ** pregs)
             mreg->getvalA()->bubble();
             mreg->getdstE()->bubble(RNONE);
             mreg->getdstM()->bubble(RNONE);
+            break;
         default:
             mreg->getstat()->normal();
             mreg->geticode()->normal();
@@ -298,20 +299,19 @@ uint64_t ExecuteStage::takeCondition(uint64_t e_icode, uint64_t e_ifun) {
 }
 
 bool ExecuteStage::calculateControlSignals(uint64_t m_stat, uint64_t w_stat) {
-    bool returnVal = false;
     switch(m_stat) {
-        case SAOK:
+        case SADR:
         case SINS:
         case SHLT:
-            returnVal = true;
+            return true;
     }
     switch (w_stat) {
-        case SAOK:
+        case SADR:
         case SINS:
         case SHLT:
-            returnVal = true;
+            return true;
     }
-    return returnVal;
+    return false;
 }
 
 bool ExecuteStage::getM_bubble() {
