@@ -14,21 +14,19 @@
 #include "Instructions.h"
 #include "Memory.h"
 
-
-bool MemoryStage::doClockLow(PipeReg ** pregs, Stage ** stages)
+bool MemoryStage::doClockLow(PipeReg **pregs, Stage **stages)
 {
-    M * mreg = (M *) pregs[MREG];
-    W * wreg = (W *) pregs[WREG];
-    Memory * mem = Memory::getInstance();
+    M *mreg = (M *)pregs[MREG];
+    W *wreg = (W *)pregs[WREG];
+    Memory *mem = Memory::getInstance();
     uint64_t stat;
     uint64_t icode;
     uint64_t valE;
-    uint64_t valM;
     uint64_t dstE;
     uint64_t dstM;
     uint64_t addr;
     bool error = false;
-    RegisterFile * regInst = RegisterFile::getInstance();
+    RegisterFile *regInst = RegisterFile::getInstance();
 
     stat = mreg->getstat()->getOutput();
     icode = mreg->geticode()->getOutput();
@@ -38,25 +36,22 @@ bool MemoryStage::doClockLow(PipeReg ** pregs, Stage ** stages)
     dstM = mreg->getdstM()->getOutput();
     addr = memAddr(icode, mreg);
 
-
-    if (mem_read(icode)) {
+    if (mem_read(icode))
+    {
         valM = mem->getLong(addr, error);
     }
 
-    else if (mem_write(icode)) {
+    if (mem_write(icode))
+    {
         mem->putLong(mreg->getvalA()->getOutput(), addr, error);
     }
 
-
     setWInput(wreg, stat, icode, valE, valM, dstE, dstM);
-
-    
 }
 
-void MemoryStage::doClockHigh(PipeReg ** pregs)
-{   
-    W * wreg = (W *) pregs[WREG];
-
+void MemoryStage::doClockHigh(PipeReg **pregs)
+{
+    W *wreg = (W *)pregs[WREG];
 
     wreg->getstat()->normal();
     wreg->geticode()->normal();
@@ -66,8 +61,8 @@ void MemoryStage::doClockHigh(PipeReg ** pregs)
     wreg->getdstM()->normal();
 }
 
-void MemoryStage::setWInput(W * wreg, uint64_t stat, uint64_t icode, uint64_t valE,
-                uint64_t valM, uint64_t dstE, uint64_t dstM) 
+void MemoryStage::setWInput(W *wreg, uint64_t stat, uint64_t icode, uint64_t valE,
+                            uint64_t valM, uint64_t dstE, uint64_t dstM)
 {
     wreg->getstat()->setInput(stat);
     wreg->geticode()->setInput(icode);
@@ -75,47 +70,53 @@ void MemoryStage::setWInput(W * wreg, uint64_t stat, uint64_t icode, uint64_t va
     wreg->getvalM()->setInput(valM);
     wreg->getdstE()->setInput(dstE);
     wreg->getdstM()->setInput(dstM);
-
 }
 
-uint64_t MemoryStage::memAddr(uint64_t m_icode, M * _mreg) {
+uint64_t MemoryStage::memAddr(uint64_t m_icode, M *_mreg)
+{
 
-    switch (m_icode) {
-        case IRMMOVQ:
-        case IPUSHQ:
-        case ICALL:
-        case IMRMOVQ:
-            return _mreg->getvalE()->getOutput();
-        case IPOPQ:
-        case IRET:
-            return _mreg->getvalA()->getOutput();
-        default:
-            return 0;
+    switch (m_icode)
+    {
+    case IRMMOVQ:
+    case IPUSHQ:
+    case ICALL:
+    case IMRMOVQ:
+        return _mreg->getvalE()->getOutput();
+    case IPOPQ:
+    case IRET:
+        return _mreg->getvalA()->getOutput();
+    default:
+        return 0;
     }
 }
 
-bool MemoryStage::mem_read(uint64_t m_icode) {
-    switch (m_icode) {
-        case IMRMOVQ:
-        case IPOPQ:
-        case IRET:
-            return true;
-        default:
-            return false;
+bool MemoryStage::mem_read(uint64_t m_icode)
+{
+    switch (m_icode)
+    {
+    case IMRMOVQ:
+    case IPOPQ:
+    case IRET:
+        return true;
+    default:
+        return false;
     }
 }
 
-bool MemoryStage::mem_write(uint64_t m_icode) {
-    switch (m_icode) {
-        case IRMMOVQ:
-        case IPUSHQ:
-        case ICALL:
-            return true;
-        default:
-            return false;
+bool MemoryStage::mem_write(uint64_t m_icode)
+{
+    switch (m_icode)
+    {
+    case IRMMOVQ:
+    case IPUSHQ:
+    case ICALL:
+        return true;
+    default:
+        return false;
     }
 }
 
-uint64_t MemoryStage::getm_valM() {
+uint64_t MemoryStage::getm_valM()
+{
     return valM;
 }
