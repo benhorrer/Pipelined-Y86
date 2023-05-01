@@ -5,6 +5,7 @@ class ExecuteStage: public Stage
    private:
       uint64_t e_dstE, e_valE;
       bool bubbleM;
+      uint64_t e_cnd;
       void setMInput(M * mreg, uint64_t stat, uint64_t icode,
                             uint64_t dstE, uint64_t dstM, uint64_t valA, 
                             uint64_t Cnd, uint64_t valE);
@@ -27,5 +28,6 @@ class ExecuteStage: public Stage
       uint64_t gete_dstE();
       uint64_t gete_valE();
       bool getM_bubble();
+      uint64_t gete_Cnd();
 
 };

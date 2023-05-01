@@ -28,7 +28,6 @@ bool ExecuteStage::doClockLow(PipeReg ** pregs, Stage ** stages)
 
     uint64_t Cnd = 0;
     bool error = false;
-    uint64_t e_cnd;
     uint64_t eregIcode = ereg->geticode()->getOutput();
     RegisterFile * regInst = RegisterFile::getInstance();
     e_valE = ereg->getvalC()->getOutput();
@@ -318,3 +317,6 @@ bool ExecuteStage::getM_bubble() {
     return bubbleM;
 }
 
+uint64_t ExecuteStage::gete_Cnd() {
+    return e_cnd;
+}

@@ -19,11 +19,9 @@ class DecodeStage: public Stage
       uint64_t FwdB(uint64_t srcB, uint64_t e_dstE, uint64_t e_valE,
           M * mreg, W * wreg, D * dreg, MemoryStage * mStage);
       bool E_bubble(uint64_t e_icode, uint64_t e_dstM, 
-          uint64_t srcA, uint64_t srcB);
+          uint64_t srcA, uint64_t srcB, uint64_t e_cnd);
       void calculateControlSignals(uint64_t e_icode, uint64_t e_dstM,
-          uint64_t srcA, uint64_t srcB);
-
-
+          uint64_t srcA, uint64_t srcB, uint64_t e_cnd);
 
 
    public:

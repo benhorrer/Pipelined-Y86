@@ -11,6 +11,7 @@
 #include "Stage.h"
 #include "MemoryStage.h"
 #include "DecodeStage.h"
+#include "ExecuteStage.h"
 #include "FetchStage.h"
 #include "Status.h"
 #include "Debug.h"
@@ -38,6 +39,7 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
    W * wreg = (W *) pregs[WREG];
    MemoryStage * mStage = (MemoryStage *) stages[MSTAGE];
    DecodeStage * dStage = (DecodeStage *) stages[DSTAGE];
+   ExecuteStage * eStage = (ExecuteStage *) stages[ESTAGE];
 
    uint64_t f_pc = 0, icode = 0, ifun = 0, valC = 0, valP = 0;
    uint64_t rA = RNONE, rB = RNONE, stat = SAOK;
@@ -94,7 +96,7 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
 
    //stall check
    calculateControlSignals(ereg->geticode()->getOutput(), ereg->getdstM()->getOutput(),
-        dStage->getd_srcA(), dStage->getd_srcB());
+        dStage->getd_srcA(), dStage->getd_srcB(), eStage->gete_Cnd());
    //provide the input values for the D register
    setDInput(dreg, f_stat(icode, memerror), icode, ifun, rA, rB, valC, valP);
    return false;
@@ -118,8 +120,7 @@ void FetchStage::doClockHigh(PipeReg ** pregs)
             freg->getpredPC()->normal();
 
     }
-    switch(stallD) {
-        case true:
+    if (stallD) {
             dreg->getstat()->bubble();
             dreg->geticode()->bubble();
             dreg->getifun()->bubble();
@@ -127,8 +128,17 @@ void FetchStage::doClockHigh(PipeReg ** pregs)
             dreg->getrB()->bubble();
             dreg->getvalC()->bubble();
             dreg->getvalP()->bubble();
-            break;
-        default:
+    }
+    else if (bubbleD) {
+        dreg->getstat()->bubble(SAOK);
+        dreg->geticode()->bubble(INOP);
+        dreg->getifun()->bubble();
+        dreg->getrA()->bubble(RNONE);
+        dreg->getrB()->bubble(RNONE);
+        dreg->getvalC()->bubble();
+        dreg->getvalP()->bubble();
+    }
+    else {
             freg->getpredPC()->normal();
             dreg->getstat()->normal();
             dreg->geticode()->normal();
@@ -268,9 +278,16 @@ bool FetchStage::d_stall(uint64_t e_icode, uint64_t e_dstM, uint64_t d_srcA, uin
     return false;
 }
 
-void FetchStage::calculateControlSignals(uint64_t e_icode, uint64_t e_dstM, uint64_t d_srcA, uint64_t d_srcB) {
+bool FetchStage::d_bubble(uint64_t e_icode, uint64_t e_cnd) {
+    return e_icode == IJXX && !e_cnd;
+}
+
+void FetchStage::calculateControlSignals(uint64_t e_icode, uint64_t e_dstM, 
+    uint64_t d_srcA, uint64_t d_srcB, uint64_t e_cnd) {
     if (f_stall(e_icode, e_dstM, d_srcA, d_srcB)) stallF = true;
     else stallF = false;
     if (d_stall(e_icode, e_dstM, d_srcA, d_srcB)) stallD = true;
     else stallD = false;
+    if (d_bubble(e_icode, e_cnd)) bubbleD = true;
+    else bubbleD = false;
 }
