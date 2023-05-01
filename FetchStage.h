@@ -3,6 +3,8 @@
 class FetchStage: public Stage
 {
    private:
+      bool stallF;
+      bool stallD;
       void setDInput(D * dreg, uint64_t stat, uint64_t icode, uint64_t ifun, 
                      uint64_t rA, uint64_t rB,
                      uint64_t valC, uint64_t valP);
@@ -15,6 +17,12 @@ class FetchStage: public Stage
       bool needValC(uint64_t f_icode);
       bool instr_valid(uint64_t f_icode);
       uint64_t f_stat(uint64_t f_icode, MemoryStage * mStage);
+      bool f_stall(uint64_t e_icode, uint64_t e_dstM, 
+          uint64_t d_srcA, uint64_t d_srcB);
+      bool d_stall(uint64_t e_icode, uint64_t e_dstM, 
+          uint64_t d_srcA, uint64_t d_srcB);
+      void calculateControlSignals(uint64_t e_icode, uint64_t e_dstM,
+          uint64_t d_srcA, uint64_t d_srcB);
 
 
    public:

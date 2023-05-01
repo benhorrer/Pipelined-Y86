@@ -5,10 +5,12 @@
 #include "PipeReg.h"
 #include "F.h"
 #include "D.h"
+#include "E.h"
 #include "M.h"
 #include "W.h"
 #include "Stage.h"
 #include "MemoryStage.h"
+#include "DecodeStage.h"
 #include "FetchStage.h"
 #include "Status.h"
 #include "Debug.h"
@@ -31,9 +33,12 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
 {
    F * freg = (F *) pregs[FREG];
    D * dreg = (D *) pregs[DREG];
+   E * ereg = (E *) pregs[EREG];
    M * mreg = (M *) pregs[MREG];
    W * wreg = (W *) pregs[WREG];
    MemoryStage * mStage = (MemoryStage *) stages[MSTAGE];
+   DecodeStage * dStage = (DecodeStage *) stages[DSTAGE];
+
    uint64_t f_pc = 0, icode = 0, ifun = 0, valC = 0, valP = 0;
    uint64_t rA = RNONE, rB = RNONE, stat = SAOK;
 
@@ -87,6 +92,9 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
    valP = PCIncrement(f_pc, needRegIds(icode), needValC(icode));
    freg->getpredPC()->setInput(predictPC(icode, valC, valP));
 
+   //stall check
+   calculateControlSignals(ereg->geticode()->getOutput(), ereg->getdstM()->getOutput(),
+        dStage->getd_srcA(), dStage->getd_srcB());
    //provide the input values for the D register
    setDInput(dreg, stat, icode, ifun, rA, rB, valC, valP);
    return false;
@@ -102,7 +110,34 @@ void FetchStage::doClockHigh(PipeReg ** pregs)
 {
    F * freg = (F *) pregs[FREG];
    D * dreg = (D *) pregs[DREG];
+    switch(stallF) {
+        case true:
+            freg->getpredPC()->bubble();
+            break;
+        default:
+            freg->getpredPC()->normal();
 
+    }
+    switch(stallD) {
+        case true:
+            dreg->getstat()->bubble();
+            dreg->geticode()->bubble();
+            dreg->getifun()->bubble();
+            dreg->getrA()->bubble();
+            dreg->getrB()->bubble();
+            dreg->getvalC()->bubble();
+            dreg->getvalP()->bubble();
+            break;
+        default:
+            freg->getpredPC()->normal();
+            dreg->getstat()->normal();
+            dreg->geticode()->normal();
+            dreg->getifun()->normal();
+            dreg->getrA()->normal();
+            dreg->getrB()->normal();
+            dreg->getvalC()->normal();
+            dreg->getvalP()->normal();
+    }
    freg->getpredPC()->normal();
    dreg->getstat()->normal();
    dreg->geticode()->normal();
@@ -227,4 +262,23 @@ uint64_t FetchStage::f_stat(uint64_t f_icode, MemoryStage * mStage) {
     else if (!instr_valid(f_icode)) return SINS;
     else if (f_icode == IHALT) return SHLT;
     else return SAOK;
+}
+
+bool FetchStage::f_stall(uint64_t e_icode, uint64_t e_dstM, uint64_t d_srcA, uint64_t d_srcB) {
+    if((e_icode == IMRMOVQ || e_icode == IPOPQ)
+        && (e_dstM == d_srcA || e_dstM == d_srcB)) return true;
+    return false;
+}
+
+bool FetchStage::d_stall(uint64_t e_icode, uint64_t e_dstM, uint64_t d_srcA, uint64_t d_srcB) {
+    if((e_icode == IMRMOVQ || e_icode == IPOPQ)
+        && (e_dstM == d_srcA || e_dstM == d_srcB)) return true;
+    return false;
+}
+
+void FetchStage::calculateControlSignals(uint64_t e_icode, uint64_t e_dstM, uint64_t d_srcA, uint64_t d_srcB) {
+    if (f_stall(e_icode, e_dstM, d_srcA, d_srcB)) stallF = true;
+    else stallF = false;
+    if (d_stall(e_icode, e_dstM, d_srcA, d_srcB)) stallD = true;
+    else stallD = false;
 }

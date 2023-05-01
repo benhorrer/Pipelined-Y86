@@ -17,6 +17,7 @@ class DecodeStage: public Stage
           M * mreg, W * wreg, D * dreg, MemoryStage * mStage);
       uint64_t FwdB(uint64_t srcB, uint64_t e_dstE, uint64_t e_valE,
           M * mreg, W * wreg, D * dreg, MemoryStage * mStage);
+        
 
 
 
