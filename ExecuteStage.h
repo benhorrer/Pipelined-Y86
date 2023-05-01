@@ -18,7 +18,7 @@ class ExecuteStage: public Stage
                         uint64_t aluA, uint64_t aluB);
       uint64_t set_cc(uint64_t eregIcode, uint64_t eregIfun, uint64_t total, uint64_t aluA, uint64_t aluB);
       uint64_t takeCondition(uint64_t e_icode, uint64_t e_ifun);
-      bool M_bubble(uint64_t m_stat, uint64_t w_stat);
+      bool calculateControlSignals(uint64_t m_stat, uint64_t w_stat);
 
 
    public:

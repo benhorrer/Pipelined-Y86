@@ -62,8 +62,6 @@ bool ExecuteStage::doClockLow(PipeReg ** pregs, Stage ** stages)
     if (cc_set) {
         e_cnd = set_cc(eregIcode, eregIfun, e_valE, aluA, aluB);
     }
-    
-
     //set e_cnd
     if (eregIcode == ICMOVXX) {
         e_valE = ereg->getvalA()->getOutput();
@@ -74,7 +72,7 @@ bool ExecuteStage::doClockLow(PipeReg ** pregs, Stage ** stages)
     }
 
     //set M_buble
-    bubbleM = M_bubble(mStage->getm_stat(), wStage->getw_stat());
+    bubbleM = calculateControlSignals (mStage->getm_stat(), wStage->getw_stat());
 
     setMInput(mreg, ereg->getstat()->getOutput(), eregIcode, e_dstE,
                 ereg->getdstM()->getOutput(), ereg->getvalA()->getOutput(),
@@ -183,12 +181,12 @@ uint64_t ExecuteStage::setAluFun(uint64_t eregIcode, uint64_t eregIfun) {
 bool ExecuteStage::setCC(uint64_t eregIcode, uint64_t m_stat, uint64_t w_stat)
 {
     if (eregIcode == IOPQ 
-    && m_stat != SADR
-    && m_stat != SINS 
-    && m_stat != SHLT
-    && w_stat != SADR 
-    && w_stat != SINS 
-    && w_stat != SHLT) return true;
+        && m_stat != SADR
+        && m_stat != SINS 
+        && m_stat != SHLT
+        && w_stat != SADR 
+        && w_stat != SINS 
+        && w_stat != SHLT) return true;
     else return false;
 }
 
@@ -299,7 +297,7 @@ uint64_t ExecuteStage::takeCondition(uint64_t e_icode, uint64_t e_ifun) {
     else return 0;
 }
 
-bool ExecuteStage::M_bubble(uint64_t m_stat, uint64_t w_stat) {
+bool ExecuteStage::calculateControlSignals(uint64_t m_stat, uint64_t w_stat) {
     bool returnVal = false;
     switch(m_stat) {
         case SAOK:
