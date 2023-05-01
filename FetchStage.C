@@ -49,7 +49,7 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
    //The lab assignment describes what methods need to be
    //written.
    f_pc = selectPC(freg, mreg, wreg);
-   bool memerror = mStage->getMem_error();
+   bool memerror = false;
    uint64_t inst = Memory::getInstance()->getByte(f_pc, memerror);
 
    
@@ -66,7 +66,7 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
         icode = INOP;
         ifun = FNONE;
    }
-   stat = f_stat(icode, memerror);
+   //stat = f_stat(icode, memerror);
    if (needRegIds(icode))
    {
        uint64_t registerByte = getRegIds(f_pc);
@@ -96,7 +96,7 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
    calculateControlSignals(ereg->geticode()->getOutput(), ereg->getdstM()->getOutput(),
         dStage->getd_srcA(), dStage->getd_srcB());
    //provide the input values for the D register
-   setDInput(dreg, stat, icode, ifun, rA, rB, valC, valP);
+   setDInput(dreg, f_stat(icode, memerror), icode, ifun, rA, rB, valC, valP);
    return false;
 }
 
