@@ -19,7 +19,7 @@ bool WritebackStage::doClockLow(PipeReg ** pregs, Stage ** stages)
     W * wreg = (W *) pregs[WREG];
     uint64_t icode = wreg->geticode()->getOutput();
     w_stat = wreg->getstat()->getOutput();
-    if (icode != SAOK) return true; 
+    if (w_stat != SAOK) return true; 
     return false;
 }
 
