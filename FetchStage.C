@@ -46,8 +46,14 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
    f_pc = selectPC(freg, mreg, wreg);
    bool error = mStage->getMem_error();
    uint64_t inst = Memory::getInstance()->getByte(f_pc, error);
+
+   
    if (!error)
    {
+    /*
+       icode = mStage->getm_icode();
+       ifun = mStage->getm_ifun(); 
+    */
        icode = inst >> 4;
        ifun = 0xf & inst; 
    }
@@ -55,6 +61,7 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
         icode = INOP;
         ifun = FNONE;
    }
+   stat = f_stat(icode, mStage);
    if (needRegIds(icode))
    {
        uint64_t registerByte = getRegIds(f_pc);

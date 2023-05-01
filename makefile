@@ -28,7 +28,7 @@ D.o: Instructions.h RegisterFile.h PipeReg.h PipeRegField.h Status.h
 
 E.o: RegisterFile.h Instructions.h PipeRegField.h PipeReg.h Status.h
 
-F.o: PipeRegField.h PipeReg.h
+F.o: PipeRegField.h PipeReg.h Instructions.h Status.h
 
 FetchStage.o: RegisterFile.h PipeRegField.h PipeReg.h F.h D.h M.h W.h \
 Stage.h Status.h Debug.h
