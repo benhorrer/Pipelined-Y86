@@ -19,7 +19,6 @@ bool MemoryStage::doClockLow(PipeReg **pregs, Stage **stages)
     M *mreg = (M *)pregs[MREG];
     W *wreg = (W *)pregs[WREG];
     Memory *mem = Memory::getInstance();
-    uint64_t stat;
     uint64_t icode;
     uint64_t valE;
     uint64_t dstE;
@@ -28,7 +27,6 @@ bool MemoryStage::doClockLow(PipeReg **pregs, Stage **stages)
     mem_error = false;
     RegisterFile *regInst = RegisterFile::getInstance();
 
-    stat = mreg->getstat()->getOutput();
     icode = mreg->geticode()->getOutput();
     valE = mreg->getvalE()->getOutput();
     valM = 0;
@@ -45,8 +43,10 @@ bool MemoryStage::doClockLow(PipeReg **pregs, Stage **stages)
     {
         mem->putLong(mreg->getvalA()->getOutput(), addr, mem_error);
     }
+    m_stat = setMStat(mem_error, mreg);
 
-    setWInput(wreg, stat, icode, valE, valM, dstE, dstM);
+
+    setWInput(wreg, m_stat, icode, valE, valM, dstE, dstM);
 }
 
 void MemoryStage::doClockHigh(PipeReg **pregs)
@@ -116,6 +116,13 @@ bool MemoryStage::mem_write(uint64_t m_icode)
     }
 }
 
+uint64_t MemoryStage::setMStat(bool memerror, M *mreg) {
+    if (memerror) {
+        return SADR;
+    }
+    return mreg->getstat()->getOutput();
+}
+
 uint64_t MemoryStage::getm_valM()
 {
     return valM;
@@ -124,4 +131,8 @@ uint64_t MemoryStage::getm_valM()
 bool MemoryStage::getMem_error() 
 {
     return mem_error;
+}
+
+uint64_t MemoryStage::getm_stat() {
+    return m_stat;
 }

@@ -18,7 +18,8 @@ bool WritebackStage::doClockLow(PipeReg ** pregs, Stage ** stages)
     bool error = false;
     W * wreg = (W *) pregs[WREG];
     uint64_t icode = wreg->geticode()->getOutput();
-    if (icode == 0x00) return true; 
+    w_stat = wreg->getstat()->getOutput();
+    if (icode != SAOK) return true; 
     return false;
 }
 
@@ -31,5 +32,9 @@ void WritebackStage::doClockHigh(PipeReg ** pregs)
     regInst->writeRegister(wreg->getvalE()->getOutput(), wreg->getdstE()->getOutput(), error);
     regInst->writeRegister(wreg->getvalM()->getOutput(), wreg->getdstM()->getOutput(), error);
 
+}
+
+uint64_t WritebackStage::getw_stat() {
+    return w_stat;
 }
 

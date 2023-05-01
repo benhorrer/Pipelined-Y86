@@ -9,6 +9,8 @@
 #include "W.h"
 #include "E.h"
 #include "Stage.h"
+#include "MemoryStage.h"
+#include "WritebackStage.h"
 #include "ExecuteStage.h"
 #include "Status.h"
 #include "Debug.h"
@@ -21,6 +23,8 @@ bool ExecuteStage::doClockLow(PipeReg ** pregs, Stage ** stages)
     E * ereg = (E *) pregs[EREG];
     M * mreg = (M *) pregs[MREG];
     D * dreg = (D *) pregs[DREG];
+    WritebackStage * wStage = (WritebackStage *) stages[WSTAGE];
+    MemoryStage * mStage = (MemoryStage *) stages[MSTAGE];
 
     uint64_t Cnd = 0;
     bool error = false;
@@ -47,7 +51,7 @@ bool ExecuteStage::doClockLow(PipeReg ** pregs, Stage ** stages)
     alufun = setAluFun(eregIcode, eregIfun);
 
     //set cc
-    cc_set = setCC(eregIcode);
+    cc_set = setCC(eregIcode, mStage->getm_stat(), wStage->getw_stat());
 
     //set dstE
     e_cnd = takeCondition(eregIcode, eregIfun);
@@ -69,6 +73,8 @@ bool ExecuteStage::doClockLow(PipeReg ** pregs, Stage ** stages)
         e_valE = ereg->getvalB()->getOutput() + ereg->getvalC()->getOutput();
     }
 
+    //set M_buble
+    bubbleM = M_bubble(mStage->getm_stat(), wStage->getw_stat());
 
     setMInput(mreg, ereg->getstat()->getOutput(), eregIcode, e_dstE,
                 ereg->getdstM()->getOutput(), ereg->getvalA()->getOutput(),
@@ -96,14 +102,25 @@ void ExecuteStage::doClockHigh(PipeReg ** pregs)
 {
 
     M * mreg = (M *) pregs[MREG];
-
-    mreg->getstat()->normal();
-    mreg->geticode()->normal();
-    mreg->getCnd()->normal();
-    mreg->getvalE()->normal();
-    mreg->getvalA()->normal();
-    mreg->getdstE()->normal();
-    mreg->getdstM()->normal();
+    switch(bubbleM) {
+        case true:
+            mreg->getstat()->bubble(SAOK);
+            mreg->geticode()->bubble(INOP);
+            mreg->getCnd()->bubble();
+            mreg->getvalE()->bubble();
+            mreg->getvalA()->bubble();
+            mreg->getdstE()->bubble(RNONE);
+            mreg->getdstM()->bubble(RNONE);
+        default:
+            mreg->getstat()->normal();
+            mreg->geticode()->normal();
+            mreg->getCnd()->normal();
+            mreg->getvalE()->normal();
+            mreg->getvalA()->normal();
+            mreg->getdstE()->normal();
+            mreg->getdstM()->normal();
+    }
+   
 }
 
 uint64_t ExecuteStage::gete_dstE()
@@ -138,19 +155,8 @@ uint64_t ExecuteStage::setaluA(uint64_t eregIcode, E * ereg) {
     }
 
     }
-    /*
-    if (eregIcode == IRRMOVQ || eregIcode == IOPQ) return ereg->getvalA()->getOutput();
 
-    else if (eregIcode == IIRMOVQ || eregIcode == IRMMOVQ || 
-                eregIcode == IMRMOVQ) return ereg->getvalC()->getOutput();
 
-    else if (eregIcode == ICALL || eregIcode == IPUSHQ) return -8;
-
-    else if (eregIcode == IRET || eregIcode == IPOPQ) return 8;
-
-    return 0;
-}
-*/
 uint64_t ExecuteStage::setaluB(uint64_t eregIcode, E * ereg){
     switch (eregIcode) {
         case IRMMOVQ:
@@ -164,14 +170,7 @@ uint64_t ExecuteStage::setaluB(uint64_t eregIcode, E * ereg){
             return 0;
         
     }
-    /*
-    if (eregIcode == IRMMOVQ || eregIcode == IMRMOVQ || eregIcode == IOPQ || eregIcode == ICALL ||
-            eregIcode == IPUSHQ || eregIcode == IRET || eregIcode == IPOPQ) {
-            return ereg->getvalB()->getOutput();
-            }
-    else if (eregIcode == IRRMOVQ || eregIcode == IIRMOVQ) return 0;
-    else return 0;
-    */
+   
 }
 
 uint64_t ExecuteStage::setAluFun(uint64_t eregIcode, uint64_t eregIfun) {
@@ -181,9 +180,15 @@ uint64_t ExecuteStage::setAluFun(uint64_t eregIcode, uint64_t eregIfun) {
 
 }
 
-bool ExecuteStage::setCC(uint64_t eregIcode)
+bool ExecuteStage::setCC(uint64_t eregIcode, uint64_t m_stat, uint64_t w_stat)
 {
-    if (eregIcode == IOPQ) return true;
+    if (eregIcode == IOPQ 
+    && m_stat != SADR
+    && m_stat != SINS 
+    && m_stat != SHLT
+    && w_stat != SADR 
+    && w_stat != SINS 
+    && w_stat != SHLT) return true;
     else return false;
 }
 
@@ -293,3 +298,25 @@ uint64_t ExecuteStage::takeCondition(uint64_t e_icode, uint64_t e_ifun) {
     }
     else return 0;
 }
+
+bool ExecuteStage::M_bubble(uint64_t m_stat, uint64_t w_stat) {
+    bool returnVal = false;
+    switch(m_stat) {
+        case SAOK:
+        case SINS:
+        case SHLT:
+            returnVal = true;
+    }
+    switch (w_stat) {
+        case SAOK:
+        case SINS:
+        case SHLT:
+            returnVal = true;
+    }
+    return returnVal;
+}
+
+bool ExecuteStage::getM_bubble() {
+    return bubbleM;
+}
+
