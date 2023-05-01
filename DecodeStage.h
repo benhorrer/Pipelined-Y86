@@ -3,6 +3,7 @@
 class DecodeStage: public Stage
 {
    private:
+      bool bubbleE;
       uint64_t d_srcA;
       uint64_t d_srcB;
       void setEInput(E * ereg, uint64_t stat, uint64_t icode, 
@@ -17,7 +18,10 @@ class DecodeStage: public Stage
           M * mreg, W * wreg, D * dreg, MemoryStage * mStage);
       uint64_t FwdB(uint64_t srcB, uint64_t e_dstE, uint64_t e_valE,
           M * mreg, W * wreg, D * dreg, MemoryStage * mStage);
-        
+      bool E_bubble(uint64_t e_icode, uint64_t e_dstM, 
+          uint64_t srcA, uint64_t srcB);
+      void calculateControlSignals(uint64_t e_icode, uint64_t e_dstM,
+          uint64_t srcA, uint64_t srcB);
 
 
 

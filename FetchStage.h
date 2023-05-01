@@ -16,7 +16,7 @@ class FetchStage: public Stage
       uint64_t buildValC(uint64_t f_pc, uint64_t f_icode);
       bool needValC(uint64_t f_icode);
       bool instr_valid(uint64_t f_icode);
-      uint64_t f_stat(uint64_t f_icode, MemoryStage * mStage);
+      uint64_t f_stat(uint64_t f_icode, bool memerror);
       bool f_stall(uint64_t e_icode, uint64_t e_dstM, 
           uint64_t d_srcA, uint64_t d_srcB);
       bool d_stall(uint64_t e_icode, uint64_t e_dstM, 

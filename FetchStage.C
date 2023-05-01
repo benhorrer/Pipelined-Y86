@@ -49,11 +49,11 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
    //The lab assignment describes what methods need to be
    //written.
    f_pc = selectPC(freg, mreg, wreg);
-   bool error = mStage->getMem_error();
-   uint64_t inst = Memory::getInstance()->getByte(f_pc, error);
+   bool memerror = mStage->getMem_error();
+   uint64_t inst = Memory::getInstance()->getByte(f_pc, memerror);
 
    
-   if (!error)
+   if (!memerror)
    {
     /*
        icode = mStage->getm_icode();
@@ -66,7 +66,7 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
         icode = INOP;
         ifun = FNONE;
    }
-   stat = f_stat(icode, mStage);
+   stat = f_stat(icode, memerror);
    if (needRegIds(icode))
    {
        uint64_t registerByte = getRegIds(f_pc);
@@ -138,14 +138,6 @@ void FetchStage::doClockHigh(PipeReg ** pregs)
             dreg->getvalC()->normal();
             dreg->getvalP()->normal();
     }
-   freg->getpredPC()->normal();
-   dreg->getstat()->normal();
-   dreg->geticode()->normal();
-   dreg->getifun()->normal();
-   dreg->getrA()->normal();
-   dreg->getrB()->normal();
-   dreg->getvalC()->normal();
-   dreg->getvalP()->normal();
 }
 
 /* setDInput
@@ -257,8 +249,8 @@ bool FetchStage::instr_valid(uint64_t f_icode) {
     }
 }
 
-uint64_t FetchStage::f_stat(uint64_t f_icode, MemoryStage * mStage) {
-    if (mStage->getMem_error()) return SADR;
+uint64_t FetchStage::f_stat(uint64_t f_icode, bool memerror) {
+    if (memerror) return SADR;
     else if (!instr_valid(f_icode)) return SINS;
     else if (f_icode == IHALT) return SHLT;
     else return SAOK;
