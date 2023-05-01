@@ -25,7 +25,7 @@ bool MemoryStage::doClockLow(PipeReg **pregs, Stage **stages)
     uint64_t dstE;
     uint64_t dstM;
     uint64_t addr;
-    bool error = false;
+    mem_error = false;
     RegisterFile *regInst = RegisterFile::getInstance();
 
     stat = mreg->getstat()->getOutput();
@@ -38,12 +38,12 @@ bool MemoryStage::doClockLow(PipeReg **pregs, Stage **stages)
 
     if (mem_read(icode))
     {
-        valM = mem->getLong(addr, error);
+        valM = mem->getLong(addr, mem_error);
     }
 
     if (mem_write(icode))
     {
-        mem->putLong(mreg->getvalA()->getOutput(), addr, error);
+        mem->putLong(mreg->getvalA()->getOutput(), addr, mem_error);
     }
 
     setWInput(wreg, stat, icode, valE, valM, dstE, dstM);
@@ -119,4 +119,9 @@ bool MemoryStage::mem_write(uint64_t m_icode)
 uint64_t MemoryStage::getm_valM()
 {
     return valM;
+}
+
+bool MemoryStage::getMem_error() 
+{
+    return mem_error;
 }

@@ -8,12 +8,14 @@
 #include "M.h"
 #include "W.h"
 #include "Stage.h"
+#include "MemoryStage.h"
 #include "FetchStage.h"
 #include "Status.h"
 #include "Debug.h"
 #include "Instructions.h"
 #include "Memory.h"
 #include "Tools.h"
+#include "Status.h"
 
 
 /*
@@ -31,6 +33,7 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
    D * dreg = (D *) pregs[DREG];
    M * mreg = (M *) pregs[MREG];
    W * wreg = (W *) pregs[WREG];
+   MemoryStage * mStage = (MemoryStage *) stages[MSTAGE];
    uint64_t f_pc = 0, icode = 0, ifun = 0, valC = 0, valP = 0;
    uint64_t rA = RNONE, rB = RNONE, stat = SAOK;
 
@@ -41,12 +44,16 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
    //The lab assignment describes what methods need to be
    //written.
    f_pc = selectPC(freg, mreg, wreg);
-   bool error = false;
+   bool error = mStage->getMem_error();
    uint64_t inst = Memory::getInstance()->getByte(f_pc, error);
    if (!error)
    {
        icode = inst >> 4;
        ifun = 0xf & inst; 
+   }
+   else {
+        icode = INOP;
+        ifun = FNONE;
    }
    if (needRegIds(icode))
    {
@@ -188,3 +195,29 @@ uint64_t FetchStage::predictPC(uint64_t f_icode, uint64_t f_valC, uint64_t f_val
     return f_valP;
 }
      
+bool FetchStage::instr_valid(uint64_t f_icode) {
+    switch(f_icode) 
+    {
+        case INOP:
+        case IHALT:
+        case IRRMOVQ:
+        case IIRMOVQ:
+        case IRMMOVQ:
+        case IMRMOVQ:
+        case IOPQ:
+        case IJXX:
+        case IRET:
+        case IPUSHQ:
+        case IPOPQ:
+            return true;
+        defualt:
+            return false;
+    }
+}
+
+uint64_t FetchStage::f_stat(uint64_t f_icode, MemoryStage * mStage) {
+    if (mStage->getMem_error()) return SADR;
+    else if (!instr_valid(f_icode)) return SINS;
+    else if (f_icode == IHALT) return SHLT;
+    else return SAOK;
+}
