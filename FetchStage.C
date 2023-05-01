@@ -96,7 +96,8 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
 
    //stall check
    calculateControlSignals(ereg->geticode()->getOutput(), ereg->getdstM()->getOutput(),
-        dStage->getd_srcA(), dStage->getd_srcB(), eStage->gete_Cnd());
+        dStage->getd_srcA(), dStage->getd_srcB(), eStage->gete_Cnd(),
+        dreg->geticode()->getOutput(), mreg->geticode()->getOutput());
    //provide the input values for the D register
    setDInput(dreg, f_stat(icode, memerror), icode, ifun, rA, rB, valC, valP);
    return false;
@@ -266,9 +267,11 @@ uint64_t FetchStage::f_stat(uint64_t f_icode, bool memerror) {
     else return SAOK;
 }
 
-bool FetchStage::f_stall(uint64_t e_icode, uint64_t e_dstM, uint64_t d_srcA, uint64_t d_srcB) {
-    if((e_icode == IMRMOVQ || e_icode == IPOPQ)
-        && (e_dstM == d_srcA || e_dstM == d_srcB)) return true;
+bool FetchStage::f_stall(uint64_t e_icode, uint64_t e_dstM, uint64_t d_srcA, uint64_t d_srcB, 
+    uint64_t d_icode, uint64_t m_icode) {
+    if(((e_icode == IMRMOVQ || e_icode == IPOPQ)
+        && (e_dstM == d_srcA || e_dstM == d_srcB))
+        || (e_icode == IRET || d_icode == IRET || m_icode == IRET)) return true;
     return false;
 }
 
@@ -278,16 +281,19 @@ bool FetchStage::d_stall(uint64_t e_icode, uint64_t e_dstM, uint64_t d_srcA, uin
     return false;
 }
 
-bool FetchStage::d_bubble(uint64_t e_icode, uint64_t e_cnd) {
-    return e_icode == IJXX && !e_cnd;
+bool FetchStage::d_bubble(uint64_t e_icode, uint64_t e_cnd, uint64_t d_srcA, uint64_t d_srcB,
+    uint64_t d_icode, uint64_t m_icode, uint64_t e_dstm) {
+    return (e_icode == IJXX && !e_cnd) || 
+        !((e_icode == IMRMOVQ || e_icode == IPOPQ) && (e_dstm == d_srcA || e_dstm == d_srcB))
+        && (e_icode == IRET || d_icode == IRET || m_icode == IRET);
 }
 
 void FetchStage::calculateControlSignals(uint64_t e_icode, uint64_t e_dstM, 
-    uint64_t d_srcA, uint64_t d_srcB, uint64_t e_cnd) {
-    if (f_stall(e_icode, e_dstM, d_srcA, d_srcB)) stallF = true;
+    uint64_t d_srcA, uint64_t d_srcB, uint64_t e_cnd, uint64_t d_icode, uint64_t m_icode) {
+    if (f_stall(e_icode, e_dstM, d_srcA, d_srcB, d_icode, m_icode)) stallF = true;
     else stallF = false;
     if (d_stall(e_icode, e_dstM, d_srcA, d_srcB)) stallD = true;
     else stallD = false;
-    if (d_bubble(e_icode, e_cnd)) bubbleD = true;
+    if (d_bubble(e_icode, e_cnd, d_srcA, d_srcB, d_icode, m_icode, e_dstM)) bubbleD = true;
     else bubbleD = false;
 }

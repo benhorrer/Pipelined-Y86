@@ -19,12 +19,13 @@ class FetchStage: public Stage
       bool instr_valid(uint64_t f_icode);
       uint64_t f_stat(uint64_t f_icode, bool memerror);
       bool f_stall(uint64_t e_icode, uint64_t e_dstM, 
-          uint64_t d_srcA, uint64_t d_srcB);
+          uint64_t d_srcA, uint64_t d_srcB, uint64_t d_icode, uint64_t m_icode);
       bool d_stall(uint64_t e_icode, uint64_t e_dstM, 
           uint64_t d_srcA, uint64_t d_srcB);
-      bool d_bubble(uint64_t e_icode, uint64_t e_cnd);
+      bool d_bubble(uint64_t e_icode, uint64_t e_cnd, uint64_t d_srcA, uint64_t d_srcB,
+          uint64_t d_icode, uint64_t m_icode, uint64_t e_dstm);
       void calculateControlSignals(uint64_t e_icode, uint64_t e_dstM,
-          uint64_t d_srcA, uint64_t d_srcB, uint64_t e_cnd);
+          uint64_t d_srcA, uint64_t d_srcB, uint64_t e_cnd, uint64_t d_icode, uint64_t m_icode);
       
 
 
