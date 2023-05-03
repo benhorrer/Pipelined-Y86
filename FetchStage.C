@@ -93,13 +93,15 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
    uint64_t fstat = f_stat(icode, memerror);
    //The value passed to setInput below will need to be changed
    valP = PCIncrement(f_pc, needRegIds(icode), needValC(icode));
-   freg->getpredPC()->setInput(predictPC(icode, valC, valP));
 
    //stall check
    calculateControlSignals(ereg->geticode()->getOutput(), ereg->getdstM()->getOutput(),
         dStage->getd_srcA(), dStage->getd_srcB(), eStage->gete_Cnd(),
         dreg->geticode()->getOutput(), mreg->geticode()->getOutput());
+    
+    //else freg->getpredPC()->setInput(mreg->getvalA()->getOutput());
    //provide the input values for the D register
+   pred_pc = predictPC(icode, valC, valP);
    setDInput(dreg, fstat, icode, ifun, rA, rB, valC, valP);
    return false;
 }
@@ -114,22 +116,26 @@ void FetchStage::doClockHigh(PipeReg ** pregs)
 {
    F * freg = (F *) pregs[FREG];
    D * dreg = (D *) pregs[DREG];
-    switch(stallF) {
+   //if (!stallF) freg->getpredPC()->setInput(pred_pc);
+   //else freg->getpredPC()->bubble();
+   switch(stallF) {
         case true:
-            freg->getpredPC()->bubble();
+            freg->getpredPC()->stall();
             break;
         default:
+            freg->getpredPC()->setInput(pred_pc);
             freg->getpredPC()->normal();
+            break;
 
     }
     if (stallD) {
-            dreg->getstat()->bubble();
-            dreg->geticode()->bubble();
-            dreg->getifun()->bubble();
-            dreg->getrA()->bubble();
-            dreg->getrB()->bubble();
-            dreg->getvalC()->bubble();
-            dreg->getvalP()->bubble();
+            dreg->getstat()->stall();
+            dreg->geticode()->stall();
+            dreg->getifun()->stall();
+            dreg->getrA()->stall();
+            dreg->getrB()->stall();
+            dreg->getvalC()->stall();
+            dreg->getvalP()->stall();
     }
     else if (bubbleD) {
         dreg->getstat()->bubble(SAOK);
@@ -141,14 +147,14 @@ void FetchStage::doClockHigh(PipeReg ** pregs)
         dreg->getvalP()->bubble();
     }
     else {
-            freg->getpredPC()->normal();
-            dreg->getstat()->normal();
-            dreg->geticode()->normal();
-            dreg->getifun()->normal();
-            dreg->getrA()->normal();
-            dreg->getrB()->normal();
-            dreg->getvalC()->normal();
-            dreg->getvalP()->normal();
+        //freg->getpredPC()->normal();
+        dreg->getstat()->normal();
+        dreg->geticode()->normal();
+        dreg->getifun()->normal();
+        dreg->getrA()->normal();
+        dreg->getrB()->normal();
+        dreg->getvalC()->normal();
+        dreg->getvalP()->normal();
     }
 }
 
@@ -252,6 +258,7 @@ bool FetchStage::instr_valid(uint64_t f_icode) {
         case IMRMOVQ:
         case IOPQ:
         case IJXX:
+        case ICALL:
         case IRET:
         case IPUSHQ:
         case IPOPQ:
