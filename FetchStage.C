@@ -56,11 +56,7 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
 
    
    if (!memerror)
-   {
-    
-       //icode = mStage->getm_icode();
-       //ifun = mStage->getm_ifun(); 
-    
+   {   
        icode = inst >> 4;
        ifun = 0xf & inst; 
    }
