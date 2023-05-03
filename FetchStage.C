@@ -57,10 +57,10 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
    
    if (!memerror)
    {
-    /*
-       icode = mStage->getm_icode();
-       ifun = mStage->getm_ifun(); 
-    */
+    
+       //icode = mStage->getm_icode();
+       //ifun = mStage->getm_ifun(); 
+    
        icode = inst >> 4;
        ifun = 0xf & inst; 
    }
@@ -128,16 +128,7 @@ void FetchStage::doClockHigh(PipeReg ** pregs)
             break;
 
     }
-    if (stallD) {
-            dreg->getstat()->stall();
-            dreg->geticode()->stall();
-            dreg->getifun()->stall();
-            dreg->getrA()->stall();
-            dreg->getrB()->stall();
-            dreg->getvalC()->stall();
-            dreg->getvalP()->stall();
-    }
-    else if (bubbleD) {
+    if (bubbleD) {
         dreg->getstat()->bubble(SAOK);
         dreg->geticode()->bubble(INOP);
         dreg->getifun()->bubble();
@@ -146,6 +137,16 @@ void FetchStage::doClockHigh(PipeReg ** pregs)
         dreg->getvalC()->bubble();
         dreg->getvalP()->bubble();
     }
+    else if (stallD) {
+        dreg->getstat()->stall();
+        dreg->geticode()->stall();
+        dreg->getifun()->stall();
+        dreg->getrA()->stall();
+        dreg->getrB()->stall();
+        dreg->getvalC()->stall();
+        dreg->getvalP()->stall();
+    }
+    
     else {
         //freg->getpredPC()->normal();
         dreg->getstat()->normal();
@@ -298,10 +299,10 @@ bool FetchStage::d_stall(uint64_t e_icode, uint64_t e_dstM, uint64_t d_srcA, uin
 bool FetchStage::d_bubble(uint64_t e_icode, uint64_t e_cnd, uint64_t d_srcA, uint64_t d_srcB,
     uint64_t d_icode, uint64_t m_icode, uint64_t e_dstm) {
     
-    bool bubbleRet1 = !(e_icode == IMRMOVQ || e_icode == IPOPQ);
-    bool bubbleRet2 = !(e_dstm == d_srcA || e_dstm == d_srcB);
+    bool bubbleRet1 = (e_icode == IMRMOVQ || e_icode == IPOPQ);
+    bool bubbleRet2 = (e_dstm == d_srcA || e_dstm == d_srcB);
     bool bubbleRet3 = (e_icode == IRET || d_icode == IRET || m_icode == IRET);
-    bool notReturn = (bubbleRet1 && bubbleRet2);
+    bool notReturn = !(bubbleRet1 && bubbleRet2);
     bool finalCheck = bubbleRet3 && notReturn;
     return (e_icode == IJXX && !e_cnd) || finalCheck;
     
@@ -317,3 +318,4 @@ void FetchStage::calculateControlSignals(uint64_t e_icode, uint64_t e_dstM,
     if (d_bubble(e_icode, e_cnd, d_srcA, d_srcB, d_icode, m_icode, e_dstM)) bubbleD = true;
     else bubbleD = false;
 }
+
