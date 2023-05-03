@@ -16,8 +16,8 @@
 #include "Instructions.h"
 #include "ExecuteStage.h"
 
-bool DecodeStage::doClockLow(PipeReg ** pregs, Stage ** stages)
-{
+bool DecodeStage::doClockLow(PipeReg ** pregs, Stage ** stages) {
+   
    E * ereg = (E *) pregs[EREG];
    D * dreg = (D *) pregs[DREG];
    M * mreg = (M *) pregs[MREG];
@@ -40,27 +40,25 @@ bool DecodeStage::doClockLow(PipeReg ** pregs, Stage ** stages)
    // set dstM
    dstM = setdstM(dregIcode, dreg);
    // Sel + FwdA 
-
    valA = selFwdA(d_srcA, eStage->gete_dstE(), eStage->gete_valE(),
              mreg, wreg, dreg, mStage);
    //FwdB
    valB = FwdB(d_srcB, eStage->gete_dstE(), eStage->gete_valE(),
              mreg, wreg, dreg, mStage);
    
-    calculateControlSignals(ereg->geticode()->getOutput(), ereg->getdstM()->getOutput(),
+   calculateControlSignals(ereg->geticode()->getOutput(), ereg->getdstM()->getOutput(),
         d_srcA, d_srcB, eStage->gete_Cnd());
    setEInput(ereg, dreg->getstat()->getOutput(), dregIcode,
                dreg->getifun()->getOutput(), dreg->getvalC()->getOutput(),
                valA, valB, dstE, dstM, d_srcA, d_srcB);
     
-
+    return false;
 }
 
 void DecodeStage::setEInput(E * ereg, uint64_t stat, uint64_t icode, 
                            uint64_t ifun, uint64_t valC, uint64_t valA,
                            uint64_t valB, uint64_t dstE, uint64_t dstM,
-                           uint64_t srcA, uint64_t srcB)
-{
+                           uint64_t srcA, uint64_t srcB) {
    
     ereg->getstat()->setInput(stat);
     ereg->geticode()->setInput(icode);
@@ -75,8 +73,7 @@ void DecodeStage::setEInput(E * ereg, uint64_t stat, uint64_t icode,
    
 }
 
-void DecodeStage::doClockHigh(PipeReg ** pregs)
-{
+void DecodeStage::doClockHigh(PipeReg ** pregs) {
 
     E * ereg = (E *) pregs[EREG];
 
@@ -168,6 +165,7 @@ uint64_t DecodeStage::setdstM(uint64_t dregIcode, D * dreg) {
 
 uint64_t DecodeStage::selFwdA(uint64_t srcA, uint64_t e_dstE, uint64_t e_valE,
     M * mreg, W * wreg, D * dreg, MemoryStage * mStage) {
+    
     RegisterFile * regInst = RegisterFile::getInstance();
     uint64_t dregIcode = dreg->geticode()->getOutput();
     if (dregIcode == ICALL || dregIcode == IJXX) return dreg->getvalP()->getOutput();
@@ -185,6 +183,7 @@ uint64_t DecodeStage::selFwdA(uint64_t srcA, uint64_t e_dstE, uint64_t e_valE,
 
 uint64_t DecodeStage::FwdB(uint64_t srcB, uint64_t e_dstE, uint64_t e_valE,
          M * mreg, W * wreg, D * dreg, MemoryStage * mStage) {
+    
     RegisterFile * regInst = RegisterFile::getInstance();
     if (srcB == RNONE) return 0;
     else if (srcB == e_dstE) return e_valE;
@@ -207,16 +206,16 @@ uint64_t DecodeStage::getd_srcB() {
 }
 
 bool DecodeStage::E_bubble(uint64_t e_icode, uint64_t e_dstM,
-    uint64_t srcA, uint64_t srcB, uint64_t e_cnd) 
-{
+    uint64_t srcA, uint64_t srcB, uint64_t e_cnd) {
+    
     if((e_icode == IJXX && !e_cnd) || ((e_icode == IMRMOVQ || e_icode == IPOPQ)
         && (e_dstM == srcA || e_dstM == srcB))) return true;
     return false;
 }
 
 void DecodeStage::calculateControlSignals(uint64_t e_icode, uint64_t e_dstM,
-    uint64_t srcA, uint64_t srcB, uint64_t e_cnd) 
-{
+    uint64_t srcA, uint64_t srcB, uint64_t e_cnd) {
+    
     if (E_bubble(e_icode, e_dstM, srcA, srcB, e_cnd)) bubbleE = true;
     else bubbleE = false;
 }

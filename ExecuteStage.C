@@ -18,28 +18,24 @@
 #include "Tools.h"
 #include "ConditionCodes.h"
 
-bool ExecuteStage::doClockLow(PipeReg ** pregs, Stage ** stages)
-{
+bool ExecuteStage::doClockLow(PipeReg ** pregs, Stage ** stages) {
+    
     E * ereg = (E *) pregs[EREG];
     M * mreg = (M *) pregs[MREG];
     D * dreg = (D *) pregs[DREG];
     WritebackStage * wStage = (WritebackStage *) stages[WSTAGE];
     MemoryStage * mStage = (MemoryStage *) stages[MSTAGE];
-
-    uint64_t Cnd = 0;
-    bool error = false;
-    uint64_t eregIcode = ereg->geticode()->getOutput();
     RegisterFile * regInst = RegisterFile::getInstance();
-    e_valE = ereg->getvalC()->getOutput();
-    uint64_t aluA = 0;
-    uint64_t aluB = 0;
+
+    uint64_t Cnd, aluA, aluB = 0;
     uint64_t alufun = ADDQ;
-    bool cc_set = false;
-    e_dstE = ereg->getdstE()->getOutput();
+    bool error, cc_set = false;
+    uint64_t eregIcode = ereg->geticode()->getOutput();
     uint64_t eregIfun = ereg->getifun()->getOutput();
     uint64_t d_valA = regInst->readRegister(dreg->getrA()->getOutput(), error);
+    e_valE = ereg->getvalC()->getOutput();
+    e_dstE = ereg->getdstE()->getOutput();
 
-    
     //setting AluA
     aluA = setaluA(eregIcode, ereg);
 
@@ -83,8 +79,8 @@ bool ExecuteStage::doClockLow(PipeReg ** pregs, Stage ** stages)
 
 void ExecuteStage::setMInput(M * mreg, uint64_t stat, uint64_t icode,
                             uint64_t e_dstE, uint64_t dstM, uint64_t valA, 
-                            uint64_t Cnd, uint64_t e_valE) 
-{
+                            uint64_t Cnd, uint64_t e_valE) {
+    
     mreg->getstat()->setInput(stat);
     mreg->geticode()->setInput(icode);
     mreg->getCnd()->setInput(Cnd);
@@ -95,8 +91,7 @@ void ExecuteStage::setMInput(M * mreg, uint64_t stat, uint64_t icode,
 }
 
 
-void ExecuteStage::doClockHigh(PipeReg ** pregs)
-{
+void ExecuteStage::doClockHigh(PipeReg ** pregs) {
 
     M * mreg = (M *) pregs[MREG];
     switch(bubbleM) {
@@ -121,13 +116,11 @@ void ExecuteStage::doClockHigh(PipeReg ** pregs)
    
 }
 
-uint64_t ExecuteStage::gete_dstE()
-{
+uint64_t ExecuteStage::gete_dstE() {
     return e_dstE;
 }
 
-uint64_t ExecuteStage::gete_valE()
-{
+uint64_t ExecuteStage::gete_valE() {
     return e_valE;
 }
 
@@ -151,11 +144,11 @@ uint64_t ExecuteStage::setaluA(uint64_t eregIcode, E * ereg) {
         default:
             return 0;
     }
-
-    }
+}
 
 
 uint64_t ExecuteStage::setaluB(uint64_t eregIcode, E * ereg){
+    
     switch (eregIcode) {
         case IRMMOVQ:
         case IMRMOVQ:
@@ -168,19 +161,17 @@ uint64_t ExecuteStage::setaluB(uint64_t eregIcode, E * ereg){
         default:
             return 0;
         
-    }
-   
+    }   
 }
 
 uint64_t ExecuteStage::setAluFun(uint64_t eregIcode, uint64_t eregIfun) {
-
-        if (eregIcode == IOPQ) return eregIfun;
-        return ADDQ;
-
+    
+    if (eregIcode == IOPQ) return eregIfun;
+    return ADDQ;
 }
 
-bool ExecuteStage::setCC(uint64_t eregIcode, uint64_t m_stat, uint64_t w_stat)
-{
+bool ExecuteStage::setCC(uint64_t eregIcode, uint64_t m_stat, uint64_t w_stat) {
+    
     if (eregIcode == IOPQ 
         && m_stat != SADR
         && m_stat != SINS 
@@ -192,14 +183,14 @@ bool ExecuteStage::setCC(uint64_t eregIcode, uint64_t m_stat, uint64_t w_stat)
 }
 
 uint64_t ExecuteStage::setdstE(uint64_t eregIcode, uint64_t e_cnd, uint64_t e_dstE) {
+    
     if (eregIcode == IRRMOVQ && !e_cnd) return RNONE;
     else return e_dstE;
-
 }
 
 uint64_t ExecuteStage::ALU(uint64_t eregIcode, uint64_t eregIfun,
-                        uint64_t aluA, uint64_t aluB)
-{
+                        uint64_t aluA, uint64_t aluB) {
+    
     switch (eregIfun) {
         case SUBQ:
             return aluB - aluA;
@@ -210,95 +201,75 @@ uint64_t ExecuteStage::ALU(uint64_t eregIcode, uint64_t eregIfun,
         default:
             return aluA + aluB;
     }
-    /*
-    if (eregIfun == SUBQ) {
-        return aluB - aluA;
-    }
-    else if (eregIfun == ANDQ) {
-        return aluA & aluB;
-    }
-    else if (eregIfun == XORQ) {
-        return aluA ^ aluB;
-    }
-    return aluA + aluB;
-    */
-    
 }
 
 //0 == negative , 1 == positive
 uint64_t ExecuteStage::sign(uint64_t x) {
-        uint64_t sign = x >> 63;
-        return sign;
+    
+    uint64_t sign = x >> 63;
+    return sign;
 }
 
 uint64_t ExecuteStage::set_cc(uint64_t eregIcode, uint64_t eregIfun, uint64_t total, uint64_t aluA, uint64_t aluB) {
-        uint64_t CC = 0;
-        bool error = false;
-        uint64_t overflow = 0;
-        ConditionCodes * codes = ConditionCodes::getInstance(); 
-        //uint64_t zero = 0;
-        //uint64_t negative = 0;
-        //if (setCC(eregIcode) && eregIcode == 0x6) {
-            if (eregIcode == IOPQ) {
-                if (eregIfun == ADDQ) {
-                    overflow = (sign(aluA) == sign(aluB)) && (sign(total) != sign(aluA));
-                    //codes->setConditionCode(overflow, OF, error);
-                }      
-                else if (eregIfun == SUBQ) {
-                    overflow = (sign(aluA) != sign(aluB)) && (sign(total) != sign(aluB));
-                    //codes->setConditionCode(overflow, OF, error);
-
-                }
-            }
-            else {
-                overflow = 0;
-            }
-            codes->setConditionCode(overflow, OF, error);
-            if (Tools::getBits(total, 63, 63) == 1) {
-                codes->setConditionCode(true, SF, error);
-            }
-            else {
-                codes->setConditionCode(false, SF, error);
-            }
-            if (total == 0) {
-                codes->setConditionCode(true, ZF, error);
-            }
-            else {
-                codes->setConditionCode(false, ZF, error);
-            }
-        //}
-        return CC;
+        
+    uint64_t CC = 0;
+    bool error = false;
+    uint64_t overflow = 0;
+    ConditionCodes * codes = ConditionCodes::getInstance(); 
+    if (eregIcode == IOPQ) {
+        if (eregIfun == ADDQ) {
+            overflow = (sign(aluA) == sign(aluB)) && (sign(total) != sign(aluA));
+        }      
+        else if (eregIfun == SUBQ) {
+            overflow = (sign(aluA) != sign(aluB)) && (sign(total) != sign(aluB));
+        }
+    }
+    else {
+        overflow = 0;
+    }
+    codes->setConditionCode(overflow, OF, error);
+    if (Tools::getBits(total, 63, 63) == 1) {
+        codes->setConditionCode(true, SF, error);
+    }
+    else {
+        codes->setConditionCode(false, SF, error);
+    }
+    if (total == 0) {         
+        codes->setConditionCode(true, ZF, error);
+    }
+    else {
+        codes->setConditionCode(false, ZF, error);
+    }
+    return CC;
 }
 
 
 uint64_t ExecuteStage::takeCondition(uint64_t e_icode, uint64_t e_ifun) {
+    
     bool error = false;
     ConditionCodes * codes = ConditionCodes::getInstance(); 
     uint64_t overflow = codes->getConditionCode(OF, error);
     uint64_t zero = codes->getConditionCode(ZF, error);
     uint64_t sign = codes->getConditionCode(SF, error);
 
-
-    if (e_icode == IJXX || e_icode == ICMOVXX){// return 0;
-
-    if (e_ifun == UNCOND) return 1;
-
-    else if (e_ifun == LESSEQ) return (sign ^ overflow) | zero;
-
-    else if (e_ifun == LESS) return sign ^ overflow;
-
-    else if (e_ifun == EQUAL) return zero;
-
-    else if (e_ifun == NOTEQUAL) return !zero;
-
-    else if (e_ifun == GREATEREQ) return !(sign ^ overflow);
-
-    else if (e_ifun == GREATER) return !(sign ^ overflow) & !zero;
+    if (e_icode == IJXX || e_icode == ICMOVXX) {
+        switch(e_ifun) {
+            case UNCOND: return 1;
+            case LESSEQ: return (sign ^ overflow) | zero;
+            case LESS:   return sign ^ overflow;
+            case EQUAL:  return zero;
+            case NOTEQUAL:   return !zero;
+            case GREATEREQ:  return !(sign ^ overflow);
+            case GREATER:    return !(sign ^ overflow) & !zero;
+        }
+    } 
+    else {
+        return 0;
     }
-    else return 0;
 }
 
 bool ExecuteStage::calculateControlSignals(uint64_t m_stat, uint64_t w_stat) {
+    
     switch(m_stat) {
         case SADR:
         case SINS:
