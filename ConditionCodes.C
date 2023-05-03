@@ -71,12 +71,17 @@ void ConditionCodes::setConditionCode(bool value, int32_t ccNum,
                                       bool & error)
 {
    Tools t = Tools();
-   if (ccNum != 3 && ccNum != 6 && ccNum != 2) {
-       error = true;
-   } else {
-       error = false;
-       if (value) codes = t.setBits(codes, ccNum, ccNum);
-       else codes = t.clearBits(codes, ccNum, ccNum);
+   switch (ccNum)
+   {
+       case 3:
+       case 6:
+       case 2:
+        error = false;
+        if (value) codes = t.setBits(codes, ccNum, ccNum);
+        else codes =  t.clearBits(codes, ccNum, ccNum);
+        break;
+       default:
+        error = true;
    }
    return;
 }
