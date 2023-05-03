@@ -15,19 +15,16 @@
 #include "Instructions.h"
 #include "Memory.h"
 
-bool MemoryStage::doClockLow(PipeReg **pregs, Stage **stages)
-{
+bool MemoryStage::doClockLow(PipeReg **pregs, Stage **stages) {
+    
     M *mreg = (M *)pregs[MREG];
     W *wreg = (W *)pregs[WREG];
     E *ereg = (E *)pregs[EREG];
     Memory *mem = Memory::getInstance();
-    
-    uint64_t valE;
-    uint64_t dstE;
-    uint64_t dstM;
-    uint64_t addr;
-    mem_error = false;
     RegisterFile *regInst = RegisterFile::getInstance();
+    
+    uint64_t valE, dstE, dstM, addr;
+    mem_error = false;
 
     m_icode = mreg->geticode()->getOutput();
     m_ifun = ereg->getifun()->getOutput();
@@ -47,12 +44,11 @@ bool MemoryStage::doClockLow(PipeReg **pregs, Stage **stages)
     }
     m_stat = setMStat(mem_error, mreg);
 
-
     setWInput(wreg, m_stat, m_icode, valE, valM, dstE, dstM);
 }
 
-void MemoryStage::doClockHigh(PipeReg **pregs)
-{
+void MemoryStage::doClockHigh(PipeReg **pregs) {
+    
     W *wreg = (W *)pregs[WREG];
 
     wreg->getstat()->normal();
@@ -64,8 +60,8 @@ void MemoryStage::doClockHigh(PipeReg **pregs)
 }
 
 void MemoryStage::setWInput(W *wreg, uint64_t stat, uint64_t icode, uint64_t valE,
-                            uint64_t valM, uint64_t dstE, uint64_t dstM)
-{
+                            uint64_t valM, uint64_t dstE, uint64_t dstM) {
+    
     wreg->getstat()->setInput(stat);
     wreg->geticode()->setInput(icode);
     wreg->getvalE()->setInput(valE);
@@ -74,8 +70,7 @@ void MemoryStage::setWInput(W *wreg, uint64_t stat, uint64_t icode, uint64_t val
     wreg->getdstM()->setInput(dstM);
 }
 
-uint64_t MemoryStage::memAddr(uint64_t m_icode, M *_mreg)
-{
+uint64_t MemoryStage::memAddr(uint64_t m_icode, M *_mreg) {
 
     switch (m_icode)
     {
@@ -92,8 +87,7 @@ uint64_t MemoryStage::memAddr(uint64_t m_icode, M *_mreg)
     }
 }
 
-bool MemoryStage::mem_read(uint64_t m_icode)
-{
+bool MemoryStage::mem_read(uint64_t m_icode) {
     switch (m_icode)
     {
     case IMRMOVQ:
@@ -105,8 +99,7 @@ bool MemoryStage::mem_read(uint64_t m_icode)
     }
 }
 
-bool MemoryStage::mem_write(uint64_t m_icode)
-{
+bool MemoryStage::mem_write(uint64_t m_icode) {
     switch (m_icode)
     {
     case IRMMOVQ:
@@ -125,13 +118,11 @@ uint64_t MemoryStage::setMStat(bool memerror, M *mreg) {
     return mreg->getstat()->getOutput();
 }
 
-uint64_t MemoryStage::getm_valM()
-{
+uint64_t MemoryStage::getm_valM() {
     return valM;
 }
 
-bool MemoryStage::getMem_error() 
-{
+bool MemoryStage::getMem_error() {
     return mem_error;
 }
 

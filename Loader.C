@@ -115,10 +115,6 @@ bool Loader::hasComment(std::string line)
  */
 void Loader::loadLine(std::string line)
 {
-   //Hints:
-   //Use the convert method to convert the characters
-   //that represent the address into a number.
-   //Also, use the convert method for each byte of data.
    bool errors = false;
    lastAddress = convert(line, ADDRBEGIN, 3);
    int32_t currentByte = DATABEGIN;
@@ -144,9 +140,7 @@ void Loader::loadLine(std::string line)
  */
 int32_t Loader::convert(std::string line, int32_t start, int32_t len)
 {
-   //Hint: you need something to convert a string to an int such as strtol
    char _line[len];
-
    for (int i = start, j = 0; j < len; i++, j++) {
       _line[j] = line[i];
    } 
@@ -176,44 +170,11 @@ bool Loader::hasErrors(std::string line)
    for (int i = 8; line[i] != ' '; i++) {
       count++;
    }
-   
-   //if (count % 2 != 0) return true;
-   //count = count /2;
    if (errorData(line, count)) return true;
    int32_t currentAddr = convert(line, ADDRBEGIN, 3);
    if (currentAddr < lastAddress) return true;
    if (currentAddr + (count / 2) > MEMSIZE) return true;
    
-   //1) Hint: use hasComment
-   //2) check whether line has an address.  If it doesn't,
-   //   return result of isSpaces (line must be all spaces up
-   //   to the | character)
-   //   Hint: use hasAddress and isSpaces
-   //
-   //3) return true if the address is invalid
-   //   Hint: use errorAddress 
-   //
-   //4) check whether the line has data. If it doesn't
-   //   return result of isSpaces (line must be all spaces from
-   //   after the address up to the | character)
-   //   Hint: use hasData and isSpaces
-   //
-   //5) if you get past 4), line has an address and data. Check to
-   //   make sure the data is valid using errorData
-   //   Hint: use errorData
-   //
-   //6) if you get past 5), line has a valid address and valid data.
-   //   Make sure that the address on this line is > the last address
-   //   stored to (lastAddress is a private data member)
-   //   Hint: use convert to convert address to a number and compare
-   //   to lastAddress
-   //
-   //7) Make sure that the last address of the data to be stored
-   //   by this line doesn't exceed the memory size
-   //   Hint: use numDBytes as set by errorData, MEMSIZE in Memory.h,
-   //         and addr returned by convert
-
-   // if control reaches here, no errors found
    return false;
 }
 
@@ -257,7 +218,6 @@ bool Loader::errorAddr(std::string line)
 {
    if (line[0] != '0' || line[1] != 'x') return true;
    if (line[ADDREND + 1] != ':' || line[ADDREND + 2] != ' ') return true;
-   //Hint: use isxdigit
    if (isxdigit(line[ADDRBEGIN]) && isxdigit(line[ADDRBEGIN + 1]) && 
    isxdigit(line[ADDREND])) {
        return false;
@@ -305,8 +265,6 @@ bool Loader::isLoaded()
  */
 bool Loader::badFile(std::string filename)
 {
-   //Hint: use std::string length method and C strcmp (or std::string find
-   //      or std::string at or ...)
    std::ifstream exists(filename);
    int strLength = filename.length();
    if (strLength < 4) return true;
