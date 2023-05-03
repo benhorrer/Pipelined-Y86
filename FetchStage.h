@@ -27,8 +27,9 @@ class FetchStage: public Stage
           uint64_t d_icode, uint64_t m_icode, uint64_t e_dstm);
       void calculateControlSignals(uint64_t e_icode, uint64_t e_dstM,
           uint64_t d_srcA, uint64_t d_srcB, uint64_t e_cnd, uint64_t d_icode, uint64_t m_icode);
-      
-
+      void clockBubbleD(D * dreg);
+      void clockStallD(D * dreg);
+      void clockNormalD(D * dreg);
 
 
    public:
