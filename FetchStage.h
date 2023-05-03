@@ -6,6 +6,7 @@ class FetchStage: public Stage
       bool stallF;
       bool stallD;
       bool bubbleD;
+      uint64_t pred_pc;
       void setDInput(D * dreg, uint64_t stat, uint64_t icode, uint64_t ifun, 
                      uint64_t rA, uint64_t rB,
                      uint64_t valC, uint64_t valP);
@@ -26,8 +27,9 @@ class FetchStage: public Stage
           uint64_t d_icode, uint64_t m_icode, uint64_t e_dstm);
       void calculateControlSignals(uint64_t e_icode, uint64_t e_dstM,
           uint64_t d_srcA, uint64_t d_srcB, uint64_t e_cnd, uint64_t d_icode, uint64_t m_icode);
-      
-
+      void clockBubbleD(D * dreg);
+      void clockStallD(D * dreg);
+      void clockNormalD(D * dreg);
 
 
    public:
