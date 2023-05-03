@@ -5,6 +5,7 @@
 #include "PipeReg.h"
 #include "F.h"
 #include "D.h"
+#include "E.h"
 #include "M.h"
 #include "W.h"
 #include "Stage.h"
@@ -18,35 +19,36 @@ bool MemoryStage::doClockLow(PipeReg **pregs, Stage **stages)
 {
     M *mreg = (M *)pregs[MREG];
     W *wreg = (W *)pregs[WREG];
+    E *ereg = (E *)pregs[EREG];
     Memory *mem = Memory::getInstance();
-    uint64_t stat;
-    uint64_t icode;
+    
     uint64_t valE;
     uint64_t dstE;
     uint64_t dstM;
     uint64_t addr;
-    bool error = false;
+    mem_error = false;
     RegisterFile *regInst = RegisterFile::getInstance();
 
-    stat = mreg->getstat()->getOutput();
-    icode = mreg->geticode()->getOutput();
+    m_icode = mreg->geticode()->getOutput();
+    m_ifun = ereg->getifun()->getOutput();
     valE = mreg->getvalE()->getOutput();
     valM = 0;
     dstE = mreg->getdstE()->getOutput();
     dstM = mreg->getdstM()->getOutput();
-    addr = memAddr(icode, mreg);
-
-    if (mem_read(icode))
+    addr = memAddr(m_icode, mreg);
+    if (mem_read(m_icode))
     {
-        valM = mem->getLong(addr, error);
+        valM = mem->getLong(addr, mem_error);
     }
 
-    if (mem_write(icode))
+    if (mem_write(m_icode))
     {
-        mem->putLong(mreg->getvalA()->getOutput(), addr, error);
+        mem->putLong(mreg->getvalA()->getOutput(), addr, mem_error);
     }
+    m_stat = setMStat(mem_error, mreg);
 
-    setWInput(wreg, stat, icode, valE, valM, dstE, dstM);
+
+    setWInput(wreg, m_stat, m_icode, valE, valM, dstE, dstM);
 }
 
 void MemoryStage::doClockHigh(PipeReg **pregs)
@@ -116,7 +118,31 @@ bool MemoryStage::mem_write(uint64_t m_icode)
     }
 }
 
+uint64_t MemoryStage::setMStat(bool memerror, M *mreg) {
+    if (memerror) {
+        return SADR;
+    }
+    return mreg->getstat()->getOutput();
+}
+
 uint64_t MemoryStage::getm_valM()
 {
     return valM;
+}
+
+bool MemoryStage::getMem_error() 
+{
+    return mem_error;
+}
+
+uint64_t MemoryStage::getm_stat() {
+    return m_stat;
+}
+
+uint64_t MemoryStage::getm_icode() {
+    return m_icode;
+}
+
+uint64_t MemoryStage::getm_ifun() {
+    return m_ifun;
 }
