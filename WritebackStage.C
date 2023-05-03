@@ -13,18 +13,14 @@
 #include "Debug.h"
 
 
-bool WritebackStage::doClockLow(PipeReg ** pregs, Stage ** stages)
-{
-    bool error = false;
+bool WritebackStage::doClockLow(PipeReg ** pregs, Stage ** stages) {
     W * wreg = (W *) pregs[WREG];
-    uint64_t icode = wreg->geticode()->getOutput();
     w_stat = wreg->getstat()->getOutput();
     if (w_stat != SAOK) return true; 
     return false;
 }
 
-void WritebackStage::doClockHigh(PipeReg ** pregs)
-{
+void WritebackStage::doClockHigh(PipeReg ** pregs) {
     W * wreg = (W *) pregs[WREG];
     RegisterFile * regInst = RegisterFile::getInstance();
 
