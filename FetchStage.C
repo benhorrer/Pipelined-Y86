@@ -98,9 +98,6 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
    calculateControlSignals(ereg->geticode()->getOutput(), ereg->getdstM()->getOutput(),
         dStage->getd_srcA(), dStage->getd_srcB(), eStage->gete_Cnd(),
         dreg->geticode()->getOutput(), mreg->geticode()->getOutput());
-    
-    //else freg->getpredPC()->setInput(mreg->getvalA()->getOutput());
-   //provide the input values for the D register
    pred_pc = predictPC(icode, valC, valP);
    setDInput(dreg, fstat, icode, ifun, rA, rB, valC, valP);
    return false;
@@ -116,8 +113,6 @@ void FetchStage::doClockHigh(PipeReg ** pregs)
 {
    F * freg = (F *) pregs[FREG];
    D * dreg = (D *) pregs[DREG];
-   //if (!stallF) freg->getpredPC()->setInput(pred_pc);
-   //else freg->getpredPC()->bubble();
    switch(stallF) {
         case true:
             freg->getpredPC()->stall();
@@ -131,37 +126,7 @@ void FetchStage::doClockHigh(PipeReg ** pregs)
     if (bubbleD) clockBubbleD(dreg);
     else if (stallD) clockStallD(dreg);
     else clockNormalD(dreg);
-    /*
-    if (bubbleD) {
-        dreg->getstat()->bubble(SAOK);
-        dreg->geticode()->bubble(INOP);
-        dreg->getifun()->bubble();
-        dreg->getrA()->bubble(RNONE);
-        dreg->getrB()->bubble(RNONE);
-        dreg->getvalC()->bubble();
-        dreg->getvalP()->bubble();
-    }
-    else if (stallD) {
-        dreg->getstat()->stall();
-        dreg->geticode()->stall();
-        dreg->getifun()->stall();
-        dreg->getrA()->stall();
-        dreg->getrB()->stall();
-        dreg->getvalC()->stall();
-        dreg->getvalP()->stall();
-    }
-    
-    else {
-        //freg->getpredPC()->normal();
-        dreg->getstat()->normal();
-        dreg->geticode()->normal();
-        dreg->getifun()->normal();
-        dreg->getrA()->normal();
-        dreg->getrB()->normal();
-        dreg->getvalC()->normal();
-        dreg->getvalP()->normal();
-    }
-    */
+   
 }
 
 /* setDInput
@@ -287,9 +252,6 @@ bool FetchStage::f_stall(uint64_t e_icode, uint64_t e_dstM, uint64_t d_srcA, uin
     bool bool2 = e_dstM == d_srcA || e_dstM == d_srcB;
     bool bool3 = (e_icode == IRET || d_icode == IRET || m_icode == IRET);
     bool finalCheck = (bool1 && bool2) || bool3;
-    //if(((e_icode == IMRMOVQ || e_icode == IPOPQ)
-    //    && (e_dstM == d_srcA || e_dstM == d_srcB))
-    //    || (e_icode == IRET || d_icode == IRET || m_icode == IRET)) return true;
     return finalCheck;
     
 }
