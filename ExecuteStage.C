@@ -160,6 +160,7 @@ uint64_t ExecuteStage::setaluB(uint64_t eregIcode, E * ereg){
         case IRMMOVQ:
         case IMRMOVQ:
         case IOPQ:
+        case ICALL:
         case IPUSHQ:
         case IRET:
         case IPOPQ:

@@ -90,6 +90,7 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
    if (needValC(icode)) {
         valC = buildValC(f_pc, icode);
    }
+   uint64_t fstat = f_stat(icode, memerror);
    //The value passed to setInput below will need to be changed
    valP = PCIncrement(f_pc, needRegIds(icode), needValC(icode));
    freg->getpredPC()->setInput(predictPC(icode, valC, valP));
@@ -99,7 +100,7 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
         dStage->getd_srcA(), dStage->getd_srcB(), eStage->gete_Cnd(),
         dreg->geticode()->getOutput(), mreg->geticode()->getOutput());
    //provide the input values for the D register
-   setDInput(dreg, f_stat(icode, memerror), icode, ifun, rA, rB, valC, valP);
+   setDInput(dreg, fstat, icode, ifun, rA, rB, valC, valP);
    return false;
 }
 
@@ -269,23 +270,35 @@ uint64_t FetchStage::f_stat(uint64_t f_icode, bool memerror) {
 
 bool FetchStage::f_stall(uint64_t e_icode, uint64_t e_dstM, uint64_t d_srcA, uint64_t d_srcB, 
     uint64_t d_icode, uint64_t m_icode) {
-    if(((e_icode == IMRMOVQ || e_icode == IPOPQ)
-        && (e_dstM == d_srcA || e_dstM == d_srcB))
-        || (e_icode == IRET || d_icode == IRET || m_icode == IRET)) return true;
-    return false;
+    bool bool1 = e_icode == IMRMOVQ || e_icode == IPOPQ;
+    bool bool2 = e_dstM == d_srcA || e_dstM == d_srcB;
+    bool bool3 = (e_icode == IRET || d_icode == IRET || m_icode == IRET);
+    bool finalCheck = (bool1 && bool2) || bool3;
+    //if(((e_icode == IMRMOVQ || e_icode == IPOPQ)
+    //    && (e_dstM == d_srcA || e_dstM == d_srcB))
+    //    || (e_icode == IRET || d_icode == IRET || m_icode == IRET)) return true;
+    return finalCheck;
+    
 }
 
 bool FetchStage::d_stall(uint64_t e_icode, uint64_t e_dstM, uint64_t d_srcA, uint64_t d_srcB) {
     if((e_icode == IMRMOVQ || e_icode == IPOPQ)
         && (e_dstM == d_srcA || e_dstM == d_srcB)) return true;
     return false;
+
 }
 
 bool FetchStage::d_bubble(uint64_t e_icode, uint64_t e_cnd, uint64_t d_srcA, uint64_t d_srcB,
     uint64_t d_icode, uint64_t m_icode, uint64_t e_dstm) {
-    return (e_icode == IJXX && !e_cnd) || 
-        !((e_icode == IMRMOVQ || e_icode == IPOPQ) && (e_dstm == d_srcA || e_dstm == d_srcB))
-        && (e_icode == IRET || d_icode == IRET || m_icode == IRET);
+    
+    bool bubbleRet1 = !(e_icode == IMRMOVQ || e_icode == IPOPQ);
+    bool bubbleRet2 = !(e_dstm == d_srcA || e_dstm == d_srcB);
+    bool bubbleRet3 = (e_icode == IRET || d_icode == IRET || m_icode == IRET);
+    bool notReturn = (bubbleRet1 && bubbleRet2);
+    bool finalCheck = bubbleRet3 && notReturn;
+    return (e_icode == IJXX && !e_cnd) || finalCheck;
+    
+        
 }
 
 void FetchStage::calculateControlSignals(uint64_t e_icode, uint64_t e_dstM, 
